@@ -6,11 +6,12 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     proxy: {
-      '/relay': 'http://localhost:9000',
-      '/sessions': 'http://localhost:9000',
-      '/replay': 'http://localhost:9000',
+      '/relay': 'http://localhost:29000',
+      '/sessions': 'http://localhost:29000',
+      '/replay': 'http://localhost:29000',
+      '/config': 'http://localhost:29000',
       '/ws': {
-        target: 'ws://localhost:9000',
+        target: 'ws://localhost:29000',
         ws: true,
       },
     },

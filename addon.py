@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import json
 import logging
-import re
+import os
+from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any
 
 from mitmproxy import http
-from mitmproxy.net.http import http1
 
 logger = logging.getLogger(__name__)
 
@@ -15,10 +15,10 @@ CONFIG_FILE = Path(__file__).parent / "config.json"
 
 _DEFAULT_CONFIG: dict[str, Any] = {
     "relay_host": "localhost",
-    "relay_port": 9000,
+    "relay_port": 29000,
     "sse_patterns": [
-        r"/.*sse.*",
-        r"/.*stream.*",
+        "*/sse*",
+        "*/stream*",
     ],
 }
 
@@ -38,26 +38,50 @@ class SSEInterceptorAddon:
     them to the local relay server for event-level debugging.
 
     Non-SSE requests pass through unchanged.
+    Intercept patterns use glob syntax (e.g. */sse*, */stream*).
+    Config is hot-reloaded from config.json on file change — no restart needed.
     """
 
     def __init__(self) -> None:
         config = _load_config()
         self._relay_host: str = config["relay_host"]
         self._relay_port: int = int(config["relay_port"])
-        self._patterns: list[re.Pattern[str]] = [
-            re.compile(p) for p in config["sse_patterns"]
-        ]
+        self._patterns: list[str] = list(config["sse_patterns"])
+        self._config_mtime: float = self._get_config_mtime()
         logger.info(
             "SSE interceptor ready — relay at %s:%d, patterns: %s",
             self._relay_host,
             self._relay_port,
-            [p.pattern for p in self._patterns],
+            self._patterns,
         )
+
+    def _get_config_mtime(self) -> float:
+        try:
+            return os.path.getmtime(CONFIG_FILE)
+        except OSError:
+            return 0.0
+
+    def _reload_if_changed(self) -> None:
+        mtime = self._get_config_mtime()
+        if mtime != self._config_mtime:
+            self._config_mtime = mtime
+            config = _load_config()
+            self._relay_host = config["relay_host"]
+            self._relay_port = int(config["relay_port"])
+            self._patterns = list(config["sse_patterns"])
+            logger.info(
+                "Config reloaded — relay at %s:%d, patterns: %s",
+                self._relay_host,
+                self._relay_port,
+                self._patterns,
+            )
 
     def request(self, flow: http.HTTPFlow) -> None:
         """Intercept matching SSE requests and redirect to relay server."""
+        self._reload_if_changed()
+
         url = flow.request.pretty_url
-        if not self._is_sse_request(flow):
+        if not self._is_sse_request(url):
             return
 
         logger.info("Intercepting SSE request: %s", url)
@@ -70,19 +94,21 @@ class SSEInterceptorAddon:
         flow.request.port = self._relay_port
         flow.request.scheme = "http"
 
-        # Keep the original path but point to /relay with target param
+        # Point to /relay with target param
         flow.request.path = f"/relay?target={_url_encode(original_url)}"
+
+        # Relay handler expects POST
+        flow.request.method = "POST"
 
         # Ensure HTTP/1.1 — relay server speaks HTTP/1.1
         flow.request.http_version = "HTTP/1.1"
 
-        # Remove headers that would confuse the relay
+        # Update host header
         flow.request.headers.pop("host", None)
         flow.request.headers["host"] = f"{self._relay_host}:{self._relay_port}"
 
-    def _is_sse_request(self, flow: http.HTTPFlow) -> bool:
-        url = flow.request.pretty_url
-        return any(p.search(url) for p in self._patterns)
+    def _is_sse_request(self, url: str) -> bool:
+        return any(fnmatch(url, p) for p in self._patterns)
 
 
 def _url_encode(url: str) -> str:

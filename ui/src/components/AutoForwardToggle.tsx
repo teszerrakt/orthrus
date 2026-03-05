@@ -8,7 +8,7 @@ export function AutoForwardToggle({ autoForward, onChange }: Props) {
     <button
       onClick={() => onChange(!autoForward)}
       className={[
-        "flex items-center gap-2 px-2 py-1 rounded text-[11px] border transition-colors",
+        "flex items-center gap-2 px-2 py-1 rounded text-sm border transition-colors",
         autoForward
           ? "bg-[var(--success)]/15 border-[var(--success)]/40 text-[var(--success)]"
           : "bg-transparent border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)]",

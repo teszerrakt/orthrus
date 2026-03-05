@@ -27,12 +27,12 @@ export function NetworkTab({ sessions, selectedId, onSelect }: Props) {
   return (
     <div className="flex flex-col h-full overflow-hidden border-r border-[var(--border)]">
       {/* Header */}
-      <div className="px-3 py-2 text-[var(--text-muted)] text-[11px] uppercase tracking-widest border-b border-[var(--border)] bg-[var(--bg-panel)] shrink-0">
+      <div className="px-3 py-2 text-[var(--text-muted)] text-xs uppercase tracking-widest border-b border-[var(--border)] bg-[var(--bg-panel)] shrink-0">
         SSE Sessions
       </div>
 
       {list.length === 0 && (
-        <div className="flex-1 flex items-center justify-center text-[var(--text-dim)] text-[11px] px-4 text-center">
+        <div className="flex-1 flex items-center justify-center text-[var(--text-muted)] text-sm px-4 text-center">
           Waiting for SSE requests...
         </div>
       )}
@@ -55,22 +55,22 @@ export function NetworkTab({ sessions, selectedId, onSelect }: Props) {
             >
               {/* Top row: status dot + method + pending badge */}
               <div className="flex items-center gap-2 mb-0.5">
-                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusDot(s.info.status)}`} />
-                <span className="text-[var(--text-muted)] text-[10px] uppercase">
+                <span className={`w-2 h-2 rounded-full shrink-0 ${statusDot(s.info.status)}`} />
+                <span className="text-[var(--text-muted)] text-xs uppercase">
                   {s.info.request.method}
                 </span>
                 {hasPending && (
-                  <span className="ml-auto text-[9px] bg-[var(--accent)] text-white rounded-full px-1.5 py-0.5 leading-none">
+                  <span className="ml-auto text-xs bg-[var(--accent)] text-white rounded-full px-2 py-0.5 leading-none">
                     {s.info.pending_count}
                   </span>
                 )}
               </div>
               {/* URL */}
-              <div className="text-[var(--text)] text-[11px] truncate font-mono">
+              <div className="text-[var(--text)] text-sm truncate font-mono">
                 {shortUrl(s.info.request.url)}
               </div>
               {/* Stats */}
-              <div className="text-[var(--text-dim)] text-[10px] mt-0.5">
+              <div className="text-[var(--text-muted)] text-xs mt-0.5">
                 {s.info.event_count} events
               </div>
             </button>

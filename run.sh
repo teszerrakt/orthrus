@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
-RELAY_PORT="${RELAY_PORT:-9000}"
-PROXY_PORT="${PROXY_PORT:-8080}"
+RELAY_PORT="${RELAY_PORT:-29000}"
+PROXY_PORT="${PROXY_PORT:-28080}"
 MOCKS_DIR="${MOCKS_DIR:-./mocks}"
 
 echo "[run.sh] Starting relay server on :${RELAY_PORT}"

@@ -139,3 +139,11 @@ export interface SessionState {
   pending: PendingEvent[];
   history: HistoryEntry[];
 }
+
+// ── Settings / Config types ───────────────────────────────────────────────────
+
+export interface AppConfig {
+  sse_patterns: string[];
+  relay_host: string;
+  relay_port: number;
+}

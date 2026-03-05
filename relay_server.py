@@ -8,6 +8,7 @@ from pathlib import Path
 import aiohttp
 from aiohttp import web
 
+from src.handlers.config import get_config_handler, put_config_handler
 from src.handlers.relay import relay_handler
 from src.handlers.replay import replay_handler
 from src.handlers.sessions import sessions_handler
@@ -71,6 +72,8 @@ def create_app(mocks_dir: Path, auto_forward: bool = False) -> web.Application:
     app.router.add_get("/ws", websocket_handler)
     app.router.add_get("/sessions", sessions_handler)
     app.router.add_post("/replay", replay_handler)
+    app.router.add_get("/config", get_config_handler)
+    app.router.add_put("/config", put_config_handler)
 
     # Serve React UI build artifacts
     if UI_DIST.exists():
@@ -100,7 +103,7 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(description="SSE Event Debugger — Relay Server")
     parser.add_argument(
-        "--port", type=int, default=9000, help="Relay server port (default: 9000)"
+        "--port", type=int, default=29000, help="Relay server port (default: 29000)"
     )
     parser.add_argument(
         "--host", default="0.0.0.0", help="Bind host (default: 0.0.0.0)"

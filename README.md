@@ -5,11 +5,11 @@ SSE debugging tool for QA — intercepts Server-Sent Events with mitmproxy, rout
 ## Architecture
 
 ```
-Mobile/Browser ──WiFi proxy──► mitmproxy :8080
+Mobile/Browser ──WiFi proxy──► mitmproxy :28080
                                    │
                                    │ rewrites SSE requests to /relay?target=<url>
                                    ▼
-                           relay server :9000   ◄──► WebSocket ◄──► Browser UI
+                           relay server :29000   ◄──► WebSocket ◄──► Browser UI
                                    │
                                    │ upstream SSE fetch
                                    ▼
@@ -32,9 +32,9 @@ cd ui && bun run build && cd ..
 ./run.sh
 ```
 
-Open `http://localhost:9000` in your browser.
+Open `http://localhost:29000` in your browser.
 
-On your mobile device, set the WiFi proxy to `<your-machine-ip>:8080`.
+On your mobile device, set the WiFi proxy to `<your-machine-ip>:28080`.
 
 ## How It Works
 
@@ -78,22 +78,24 @@ See `mocks/_example_*.json` for more examples. Mock files are hot-reloaded — n
 
 ## Configuration
 
-`config.json` controls which URLs mitmproxy intercepts:
+`config.json` controls which URLs mitmproxy intercepts. You can also edit patterns from the **Settings page** in the UI (gear icon in top bar).
 
 ```json
 {
-  "intercept_patterns": ["*/sse*", "*/stream*", "*/events*"],
+  "sse_patterns": ["*/sse*", "*/stream*", "*/events*"],
   "relay_host": "127.0.0.1",
-  "relay_port": 9000
+  "relay_port": 29000
 }
 ```
+
+Patterns use glob syntax — `*` matches anything. The addon hot-reloads `config.json` on every request (cheap mtime check), so changes take effect immediately without restarting mitmproxy.
 
 ## Environment Variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `RELAY_PORT` | `9000` | Relay server port |
-| `PROXY_PORT` | `8080` | mitmproxy port |
+| `RELAY_PORT` | `29000` | Relay server port |
+| `PROXY_PORT` | `28080` | mitmproxy port |
 | `MOCKS_DIR` | `./mocks` | Mock files directory |
 
 ## Development

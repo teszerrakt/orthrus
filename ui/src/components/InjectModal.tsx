@@ -36,16 +36,14 @@ export function InjectModal({ afterIndex, onConfirm, onClose }: Props) {
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)]">
           <div>
-            <span className="text-[var(--inject)] text-[12px] font-semibold">
+            <span className="text-[var(--inject)] text-sm font-semibold">
               Inject Synthetic Event
             </span>
-            <span className="text-[var(--text-muted)] text-[10px] ml-2">
-              after index {afterIndex}
-            </span>
+            <span className="text-[var(--text-muted)] text-xs ml-2">after index {afterIndex}</span>
           </div>
           <button
             onClick={onClose}
-            className="text-[var(--text-muted)] hover:text-[var(--text)] text-[18px] leading-none"
+            className="text-[var(--text-muted)] hover:text-[var(--text)] text-lg leading-none"
           >
             &times;
           </button>
@@ -53,22 +51,22 @@ export function InjectModal({ afterIndex, onConfirm, onClose }: Props) {
 
         <div className="p-4 flex flex-col gap-3">
           <label className="flex flex-col gap-1">
-            <span className="text-[var(--text-muted)] text-[10px] uppercase tracking-wider">
+            <span className="text-[var(--text-muted)] text-xs uppercase tracking-wider">
               event type
             </span>
             <input
-              className="bg-[var(--bg)] border border-[var(--border)] rounded px-2 py-1.5 text-[var(--text)] text-[12px] font-mono focus:outline-none focus:border-[var(--inject)]"
+              className="bg-[var(--bg)] border border-[var(--border)] rounded px-3 py-2 text-[var(--text)] text-sm font-mono focus:outline-none focus:border-[var(--inject)]"
               value={eventType}
               onChange={(e) => setEventType(e.target.value)}
             />
           </label>
 
           <label className="flex flex-col gap-1">
-            <span className="text-[var(--text-muted)] text-[10px] uppercase tracking-wider">
+            <span className="text-[var(--text-muted)] text-xs uppercase tracking-wider">
               id (optional)
             </span>
             <input
-              className="bg-[var(--bg)] border border-[var(--border)] rounded px-2 py-1.5 text-[var(--text)] text-[12px] font-mono focus:outline-none focus:border-[var(--inject)]"
+              className="bg-[var(--bg)] border border-[var(--border)] rounded px-3 py-2 text-[var(--text)] text-sm font-mono focus:outline-none focus:border-[var(--inject)]"
               value={id}
               onChange={(e) => setId(e.target.value)}
               placeholder="(none)"
@@ -76,30 +74,28 @@ export function InjectModal({ afterIndex, onConfirm, onClose }: Props) {
           </label>
 
           <label className="flex flex-col gap-1">
-            <span className="text-[var(--text-muted)] text-[10px] uppercase tracking-wider">
-              data
-            </span>
+            <span className="text-[var(--text-muted)] text-xs uppercase tracking-wider">data</span>
             <textarea
-              className="bg-[var(--bg)] border border-[var(--border)] rounded px-2 py-1.5 text-[var(--text)] text-[11px] font-mono focus:outline-none focus:border-[var(--inject)] resize-none h-32"
+              className="bg-[var(--bg)] border border-[var(--border)] rounded px-3 py-2 text-[var(--text)] text-sm font-mono focus:outline-none focus:border-[var(--inject)] resize-none h-32"
               value={data}
               onChange={(e) => setData(e.target.value)}
               spellCheck={false}
             />
           </label>
 
-          {error && <div className="text-[var(--danger)] text-[11px]">{error}</div>}
+          {error && <div className="text-[var(--danger)] text-sm">{error}</div>}
         </div>
 
         <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-[var(--border)]">
           <button
             onClick={onClose}
-            className="px-3 py-1.5 text-[11px] text-[var(--text-muted)] hover:text-[var(--text)] border border-[var(--border)] rounded"
+            className="px-3 py-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text)] border border-[var(--border)] rounded"
           >
             Cancel
           </button>
           <button
             onClick={handleConfirm}
-            className="px-3 py-1.5 text-[11px] text-white bg-[var(--inject)] hover:opacity-90 rounded"
+            className="px-3 py-1.5 text-sm text-white bg-[var(--inject)] hover:opacity-90 rounded"
           >
             Inject
           </button>
