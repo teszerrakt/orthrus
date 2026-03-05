@@ -1,8 +1,16 @@
 import CodeMirror from "@uiw/react-codemirror";
 import { json } from "@codemirror/lang-json";
 import { oneDark } from "@codemirror/theme-one-dark";
+import { EditorView } from "@codemirror/view";
 
-const JSON_EXTENSIONS = [json(), oneDark];
+// Override the hardcoded #282c34 background from oneDark to match our --bg
+const transparentBg = EditorView.theme({
+  "&": { background: "var(--bg) !important", backgroundColor: "var(--bg) !important" },
+  ".cm-scroller": { background: "var(--bg) !important", backgroundColor: "var(--bg) !important" },
+  ".cm-gutters": { background: "var(--bg-panel) !important", backgroundColor: "var(--bg-panel) !important", borderRight: "1px solid var(--border)" },
+});
+
+const JSON_EXTENSIONS = [json(), oneDark, transparentBg];
 
 interface Props {
   /** The raw value to display/edit */
