@@ -71,7 +71,7 @@ async def stream_upstream_sse(
             timeout=aiohttp.ClientTimeout(
                 total=None,  # no total timeout — SSE streams can be long
                 connect=30,
-                sock_read=60,
+                sock_read=None,  # no read timeout — events may be held at breakpoint
             ),
         ) as resp:
             resp.raise_for_status()

@@ -25,6 +25,11 @@ _SSE_HEADERS = {
     "X-Accel-Buffering": "no",
 }
 
+# SSE comment heartbeat — keeps Postman/curl/browser connections alive while
+# events are held at a breakpoint. Invisible to SSE consumers.
+_HEARTBEAT_BYTES = b": keep-alive\n\n"
+_HEARTBEAT_INTERVAL = 15  # seconds
+
 # Headers that must not be forwarded upstream
 _HOP_BY_HOP = frozenset(
     {
@@ -115,12 +120,24 @@ async def relay_handler(request: web.Request) -> web.StreamResponse:
     response = web.StreamResponse(status=200, headers=_SSE_HEADERS)
     await response.prepare(request)
 
+    async def _heartbeat() -> None:
+        """Periodically write SSE comment lines so the client never times out."""
+        try:
+            while True:
+                await asyncio.sleep(_HEARTBEAT_INTERVAL)
+                await response.write(_HEARTBEAT_BYTES)
+        except (asyncio.CancelledError, ConnectionResetError):
+            pass
+
+    heartbeat_task = asyncio.create_task(_heartbeat())
+
     try:
         async for event in session.approved_events():
             await response.write(_format_sse(event))
     except ConnectionResetError:
         logger.info("Session %s: client disconnected", session.id)
     finally:
+        heartbeat_task.cancel()
         upstream_task.cancel()
         await session.close_stream()
         session.status.__class__  # noqa: keep alive
