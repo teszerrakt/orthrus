@@ -107,6 +107,11 @@ class SSEInterceptorAddon:
         flow.request.headers.pop("host", None)
         flow.request.headers["host"] = f"{self._relay_host}:{self._relay_port}"
 
+    def responseheaders(self, flow: http.HTTPFlow) -> None:
+        """Enable response streaming for SSE — mitmproxy must not buffer."""
+        if flow.request.path.startswith("/relay?"):
+            flow.response.stream = True  # type: ignore[assignment]
+
     def _is_sse_request(self, url: str) -> bool:
         return any(fnmatch(url, p) for p in self._patterns)
 
