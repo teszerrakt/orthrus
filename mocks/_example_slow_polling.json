@@ -1,6 +1,7 @@
 {
+  "name": "example-slow-polling",
   "enabled": false,
-  "url_pattern": "*/sse*",
+  "match": { "url_pattern": ".*/sse.*" },
   "mode": "pipeline",
   "pipeline": [
     { "action": "delay", "delay_ms": 2000 },
