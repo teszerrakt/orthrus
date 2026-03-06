@@ -110,6 +110,11 @@ class SSEInterceptorAddon:
         # Ensure HTTP/1.1 — relay server speaks HTTP/1.1
         flow.request.http_version = "HTTP/1.1"
 
+        # Preserve original client IP for grouping in the UI
+        peer = flow.client_conn.peername
+        if peer:
+            flow.request.headers["x-original-client-ip"] = str(peer[0])
+
         # Update host header
         flow.request.headers.pop("host", None)
         flow.request.headers["host"] = f"{self._relay_host}:{self._relay_port}"

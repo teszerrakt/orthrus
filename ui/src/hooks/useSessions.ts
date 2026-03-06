@@ -5,7 +5,6 @@ import type {
   PendingEvent,
   HistoryEntry,
   ServerMsg,
-  TlsErrorMsg,
   ClientCmd,
   SSEEvent,
 } from "../types";
@@ -14,7 +13,7 @@ import { useWebSocket } from "./useWebSocket";
 export function useSessions() {
   const [sessions, setSessions] = useState<Record<string, SessionState>>({});
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [latestTlsError, setLatestTlsError] = useState<TlsErrorMsg | null>(null);
+  const [tlsErrorIps, setTlsErrorIps] = useState<Set<string>>(new Set());
 
   // Load existing sessions on mount
   useEffect(() => {
@@ -38,7 +37,11 @@ export function useSessions() {
 
   const handleMessage = useCallback((msg: ServerMsg) => {
     if (msg.type === "tls_error") {
-      setLatestTlsError(msg);
+      setTlsErrorIps((prev) => {
+        const next = new Set(prev);
+        next.add(msg.client_ip);
+        return next;
+      });
       return;
     }
 
@@ -255,11 +258,21 @@ export function useSessions() {
     [send],
   );
 
+  const clearTlsError = useCallback((ip: string) => {
+    setTlsErrorIps((prev) => {
+      if (!prev.has(ip)) return prev;
+      const next = new Set(prev);
+      next.delete(ip);
+      return next;
+    });
+  }, []);
+
   return {
     sessions,
     selectedId,
-    latestTlsError,
+    tlsErrorIps,
     setSelectedId,
+    clearTlsError,
     forward,
     edit,
     drop,

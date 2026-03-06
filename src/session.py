@@ -191,6 +191,8 @@ class Session:
         return SessionInfo(
             id=self.id,
             request=self.request,
+            client_ip=self.request.client_ip,
+            user_agent=self.request.user_agent,
             status=self.status,
             created_at=self.created_at,
             event_count=len(self._history),

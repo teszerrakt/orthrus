@@ -28,6 +28,8 @@ class RequestInfo(BaseModel):
     method: str
     headers: dict[str, str]
     body: str | None = None
+    client_ip: str | None = None
+    user_agent: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -65,6 +67,8 @@ class SessionInfo(BaseModel):
 
     id: str
     request: RequestInfo
+    client_ip: str | None = None
+    user_agent: str | None = None
     status: SessionStatus
     created_at: float
     event_count: int

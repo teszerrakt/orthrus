@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Settings, Copy, Check } from "lucide-react";
 import { useSessions } from "./hooks/useSessions";
 import { useConfig } from "./hooks/useConfig";
-import { CertWarning } from "./components/CertWarning";
+import { useClientAliases } from "./hooks/useClientAliases";
 import { NetworkTab } from "./components/NetworkTab";
 import { SessionDetail } from "./components/SessionDetail";
 import { SettingsPage } from "./components/SettingsPage";
@@ -13,12 +13,14 @@ export default function App() {
   const [view, setView] = useState<View>("inspector");
   const [copied, setCopied] = useState(false);
   const { config } = useConfig();
+  const { aliases, setAlias } = useClientAliases();
 
   const {
     sessions,
     selectedId,
-    latestTlsError,
+    tlsErrorIps,
     setSelectedId,
+    clearTlsError,
     forward,
     edit,
     drop,
@@ -44,8 +46,6 @@ export default function App() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <CertWarning latestTlsError={latestTlsError} />
-
       {/* Top bar */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--border)] bg-[var(--bg-panel)] shrink-0">
         <span className="text-[var(--text)] font-semibold text-base tracking-tight">
@@ -82,7 +82,16 @@ export default function App() {
       <div className="flex flex-1 overflow-hidden">
         {/* Left: session list */}
         <div className="w-80 shrink-0 overflow-hidden flex flex-col">
-          <NetworkTab sessions={sessions} selectedId={selectedId} onSelect={setSelectedId} />
+          <NetworkTab
+            sessions={sessions}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+            aliases={aliases}
+            onSetAlias={setAlias}
+            tlsErrorIps={tlsErrorIps}
+            onClearTlsError={clearTlsError}
+            proxyAddress={config?.proxy_address ?? null}
+          />
         </div>
 
         {/* Right: session detail */}

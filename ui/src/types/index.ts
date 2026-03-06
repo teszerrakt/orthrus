@@ -12,6 +12,8 @@ export interface RequestInfo {
   method: string;
   headers: Record<string, string>;
   body: string | null;
+  client_ip: string | null;
+  user_agent: string | null;
 }
 
 // ── Session types ────────────────────────────────────────────────────────────
@@ -32,6 +34,8 @@ export interface HistoryEntry {
 export interface SessionInfo {
   id: string;
   request: RequestInfo;
+  client_ip: string | null;
+  user_agent: string | null;
   status: SessionStatus;
   created_at: number;
   event_count: number;
