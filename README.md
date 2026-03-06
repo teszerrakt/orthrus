@@ -16,16 +16,19 @@ Mobile/Browser ──WiFi proxy──► mitmproxy :28080
                            Real SSE Server
 ```
 
+## Prerequisites
+
+- [Python 3.12+](https://www.python.org/downloads/)
+- [uv](https://docs.astral.sh/uv/getting-started/installation/) — Python package manager (installs mitmproxy and all Python deps)
+- [bun](https://bun.sh/docs/installation) — JavaScript runtime & package manager
+
 ## Quick Start
 
 ```bash
-# Install Python deps
-uv sync
+# Check prerequisites and install all dependencies
+./install.sh
 
-# Install UI deps
-cd ui && bun install && cd ..
-
-# Build UI
+# Build the UI
 cd ui && bun run build && cd ..
 
 # Run everything
@@ -101,12 +104,15 @@ Patterns use glob syntax — `*` matches anything. The addon hot-reloads `config
 ## Development
 
 ```bash
+# Run everything with Vite HMR (relay + mitmproxy + Vite dev server)
+./run_dev.sh
+
 # Python type check
 uv run mypy src/ relay_server.py addon.py
 
 # Python lint
 uv run ruff check .
 
-# UI dev server (hot reload, proxies to relay)
+# UI dev server only (if relay is already running separately)
 cd ui && bun run dev
 ```
