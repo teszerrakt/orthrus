@@ -10,7 +10,7 @@
       "identifier": "shell:allow-spawn",
       "allow": [
         {
-          "name": "../binaries/orthrus-backend",
+          "name": "orthrus-backend",
           "sidecar": true,
           "args": true
         }

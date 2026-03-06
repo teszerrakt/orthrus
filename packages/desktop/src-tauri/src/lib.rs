@@ -33,7 +33,7 @@ pub fn run() {
             // --- Spawn backend sidecar ---
             let sidecar_result = app
                 .shell()
-                .sidecar("../binaries/orthrus-backend")
+                .sidecar("orthrus-backend")
                 .map(|cmd| cmd.args(["--relay-port", "29000", "--proxy-port", "28080"]));
 
             match sidecar_result {
