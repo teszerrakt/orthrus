@@ -8,13 +8,11 @@ from collections.abc import AsyncIterator
 
 from src.models import (
     DelayStep,
-    DropRestStep,
     DropStep,
     EventAction,
     HistoryEntry,
     MockConfig,
     MockStep,
-    PassthroughRestStep,
     PassthroughStep,
     RequestInfo,
     SessionInfo,

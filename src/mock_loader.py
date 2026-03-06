@@ -6,7 +6,7 @@ from pathlib import Path
 
 from watchfiles import awatch
 
-from src.models import MockConfig, PipelineStep
+from src.models import MockConfig
 
 logger = logging.getLogger(__name__)
 

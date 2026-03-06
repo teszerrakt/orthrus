@@ -16,7 +16,6 @@ from src.models import (
     SSEEvent,
 )
 from src.sse_client import stream_upstream_sse
-from src.sse_parser import SSEParser
 
 import aiohttp
 
@@ -133,7 +132,6 @@ async def run_pipeline_live(
         error_holder.append(exc)
         done_event.set()
 
-    from src.sse_client import stream_upstream_sse
 
     await stream_upstream_sse(
         client_session=client_session,

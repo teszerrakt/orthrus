@@ -114,7 +114,6 @@ async def _handle_command(
 def _parse_cmd(data: dict) -> Any:
     """Parse raw dict into a typed ClientCmd using Pydantic discriminated union."""
     from pydantic import TypeAdapter
-    from src.models import ClientCmd
 
     adapter = TypeAdapter(ClientCmd)
     return adapter.validate_python(data)

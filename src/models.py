@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+from enum import Enum
+import re
 from typing import Annotated, Literal, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
-
-import re
 
 
 # ---------------------------------------------------------------------------
@@ -33,9 +33,6 @@ class RequestInfo(BaseModel):
 # ---------------------------------------------------------------------------
 # Session types
 # ---------------------------------------------------------------------------
-
-
-from enum import Enum
 
 
 class SessionStatus(str, Enum):
