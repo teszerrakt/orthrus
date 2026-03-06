@@ -48,7 +48,7 @@ On your mobile device, set the WiFi proxy to `<your-machine-ip>:28080`.
 ## How It Works
 
 1. **mitmproxy** (`addon.py`) handles HTTPS CONNECT tunneling and certificate installation. It intercepts matching SSE requests and rewrites them to the relay server.
-2. **relay server** (`relay_server.py`) receives the rewritten request, fetches the real SSE stream from upstream, and holds each event at a breakpoint until the QA engineer acts on it via the UI.
+2. **relay server** (`relay_server.py`) receives the rewritten request, fetches the real SSE stream from upstream, and holds each event at a breakpoint until the user acts on it via the UI.
 3. **WebSocket** connects the browser UI to the relay server for real-time bidirectional control.
 4. **React UI** (`ui/`) shows all active SSE sessions in a left panel; clicking a session shows events in a right panel with action buttons.
 

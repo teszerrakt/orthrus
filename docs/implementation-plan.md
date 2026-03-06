@@ -2,9 +2,9 @@
 
 ## Overview
 
-A browser-based SSE debugging tool for QA. It intercepts SSE (Server-Sent Events)
+A browser-based SSE debugging tool It intercepts SSE (Server-Sent Events)
 traffic using mitmproxy, routes it through a custom relay server, and presents
-a Chrome DevTools-style Network tab UI where QA can inspect, pause, edit, drop,
+a Chrome DevTools-style Network tab UI where user can inspect, pause, edit, drop,
 inject, and delay individual SSE events in real time. Sessions can be saved as
 JSON mock files and replayed later without a live server.
 
@@ -13,11 +13,11 @@ JSON mock files and replayed later without a live server.
 ## Architecture
 
 ```
-┌─────────────────┐   HTTPS via WiFi proxy   ┌─────────────────────┐
-│  Mobile App /   │ ────────────────────────▶ │    mitmproxy        │
-│  Browser        │                           │    addon.py         │
-│  (QA device)    │ ◀──────────────────────── │    :8080            │
-└─────────────────┘   SSE stream back         └──────────┬──────────┘
+┌───────────────────┐   HTTPS via WiFi proxy    ┌─────────────────────┐
+│  Mobile App /     │ ────────────────────────▶ │    mitmproxy        │
+│  Browser          │                           │    addon.py         │
+│  (user device)    │ ◀──────────────────────── │    :8080            │
+└───────────────────┘   SSE stream back         └──────────┬──────────┘
                                                          │ rewrites SSE requests
                                                          │ to relay server
                                                          ▼
@@ -48,7 +48,7 @@ JSON mock files and replayed later without a live server.
 
 ### Data Flow
 
-1. QA device WiFi proxy → `mitmproxy :8080`
+1. User device WiFi proxy → `mitmproxy :8080`
 2. mitmproxy `addon.py` checks if URL matches configured SSE patterns
 3. **SSE match**: rewrites request to `http://localhost:9000/relay?target=<original_url>`,
    preserving all original headers and body
@@ -57,10 +57,10 @@ JSON mock files and replayed later without a live server.
 6. Relay reads upstream SSE events one-by-one
 7. Each event is sent to the Web UI via WebSocket
 8. Web UI displays event in the Network tab (Chrome DevTools style)
-9. QA decides action per event: **Forward / Edit / Drop / Inject / Delay**
+9. User decides action per event: **Forward / Edit / Drop / Inject / Delay**
 10. Relay streams approved events back through mitmproxy to the client
-11. QA can toggle **Auto-Forward** to passthrough everything with logging only
-12. QA clicks **Save Session** to export the session as a reusable JSON mock file
+11. User can toggle **Auto-Forward** to passthrough everything with logging only
+12. User clicks **Save Session** to export the session as a reusable JSON mock file
 
 ---
 
@@ -403,10 +403,10 @@ class Session:
     status: SessionStatus
     created_at: float
 
-    _pending: asyncio.Queue[SSEEvent]       # events from upstream, waiting for QA
+    _pending: asyncio.Queue[SSEEvent]       # events from upstream, waiting for User
     _approved: asyncio.Queue[SSEEvent | None]  # None = close stream
     _history: list[HistoryEntry]
-    _auto_forward: bool                     # if True, bypass QA, forward all
+    _auto_forward: bool                     # if True, bypass User, forward all
 
     async def enqueue_upstream_event(self, event: SSEEvent) -> None: ...
     async def get_next_pending(self) -> SSEEvent: ...
@@ -449,7 +449,7 @@ async def stream_upstream_sse(
 3. Create Session via SessionManager
 4. Broadcast new_session to all WebSocket clients
 5. Start background task: stream_upstream_sse → session.enqueue_upstream_event
-6. Start background task: QA approval logic (auto-forward or wait for WS cmd)
+6. Start background task: User approval logic (auto-forward or wait for WS cmd)
 7. Return StreamResponse (text/event-stream), writing from session.approved_events()
 ```
 
@@ -673,7 +673,7 @@ All messages are JSON. Both directions use discriminated union on `type`.
 | Message        | When                                              |
 | -------------- | ------------------------------------------------- |
 | `new_session`  | A new SSE request arrives at relay                |
-| `event`        | An upstream event arrives, waiting for QA action  |
+| `event`        | An upstream event arrives, waiting for User action  |
 | `stream_end`   | Upstream SSE stream closed                        |
 | `error`        | Upstream connection or parse error                |
 
@@ -774,7 +774,7 @@ uv run mitmdump -s addon.py
 kill $RELAY_PID
 ```
 
-### QA Workflow
+### User Workflow
 
 ```bash
 # 1. First time setup
