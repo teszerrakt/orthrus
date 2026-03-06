@@ -5,6 +5,19 @@ RELAY_PORT="${RELAY_PORT:-29000}"
 PROXY_PORT="${PROXY_PORT:-28080}"
 MOCKS_DIR="${MOCKS_DIR:-./mocks}"
 
+UI_HASH_FILE="ui/dist/.build_hash"
+CURRENT_HASH=$(find ui/src ui/index.html ui/package.json ui/bun.lock ui/vite.config.ts ui/tsconfig*.json \
+  -type f 2>/dev/null | sort | xargs cat | shasum -a 256 | cut -d' ' -f1)
+
+if [ -f "$UI_HASH_FILE" ] && [ "$(cat "$UI_HASH_FILE")" = "$CURRENT_HASH" ]; then
+  echo "[run.sh] UI build is up to date, skipping build"
+else
+  echo "[run.sh] Building UI..."
+  (cd ui && bun run build)
+  mkdir -p "ui/dist"
+  printf '%s\n' "$CURRENT_HASH" > "$UI_HASH_FILE"
+fi
+
 # Detect the machine's LAN IP (the address other devices can reach us on)
 LAN_IP=$(uv run python -c "
 import socket
