@@ -37,31 +37,24 @@ export function MainTitleBar({ proxyAddress }: MainTitleBarProps) {
       {/* App title + listening address */}
       <div className="flex items-center gap-1.5">
         <span
-          className={`text-[var(--text)] tracking-wide uppercase font-semibold ${isTauri() ? "text-xs" : "text-base"}`}
+          className="text-[var(--text)] tracking-wide uppercase font-semibold text-base"
           style={{ fontFamily: '"Satyp", "SF Mono", monospace' }}
         >
           orthrus
         </span>
-        <span className={`text-[var(--text-muted)] ${isTauri() ? "text-xs" : "text-sm"}`}>
-          |
-        </span>
-        <span className={`text-[var(--text-muted)] ${isTauri() ? "text-xs" : "text-sm"}`}>
-          Listening on
-        </span>
+        <span className="text-[var(--text-muted)] text-sm">|</span>
+        <span className="text-[var(--text-muted)] text-sm">Listening on</span>
         <button
           onClick={handleCopy}
           title="Click to copy proxy address"
-          className={`flex items-center gap-1 text-[var(--text)] hover:text-[var(--accent)] transition-colors group font-semibold ${isTauri() ? "text-xs" : "text-sm"}`}
+          className="flex items-center gap-1 text-[var(--text)] hover:text-[var(--accent)] transition-colors group font-semibold text-sm"
         >
           <span className="font-mono">{proxyAddress ?? "..."}</span>
           {copied ? (
-            <Check
-              size={isTauri() ? 11 : 13}
-              className="text-[var(--success)]"
-            />
+            <Check size={13} className="text-[var(--success)]" />
           ) : (
             <Copy
-              size={isTauri() ? 11 : 13}
+              size={13}
               className="opacity-0 group-hover:opacity-100 transition-opacity"
             />
           )}

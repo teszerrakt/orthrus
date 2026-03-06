@@ -10,6 +10,8 @@ import { SettingsPage } from "./components/SettingsPage";
 import { ConfirmModal } from "./components/ConfirmModal";
 import { TauriTitleBar } from "./components/TauriTitleBar";
 import { MainTitleBar } from "./components/MainTitleBar";
+import { AppFooter } from "./components/AppFooter";
+import { VersionInfo } from "./components/VersionInfo";
 
 type View = "inspector" | "settings";
 
@@ -125,6 +127,10 @@ export default function App() {
         }}
         onCancel={() => setShowClearConfirm(false)}
       />
+
+      <AppFooter>
+        <VersionInfo />
+      </AppFooter>
     </div>
   );
 }
