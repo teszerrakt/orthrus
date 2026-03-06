@@ -18,7 +18,7 @@ from src.handlers.cert import (
 from src.handlers.config import get_config_handler, put_config_handler
 from src.handlers.relay import relay_handler
 from src.handlers.replay import replay_handler
-from src.handlers.sessions import sessions_handler
+from src.handlers.sessions import clear_sessions_handler, sessions_handler
 from src.handlers.websocket import websocket_handler
 from src.mock_loader import MockLoader
 from src.session_manager import SessionManager
@@ -81,6 +81,7 @@ def create_app(mocks_dir: Path, auto_forward: bool = False) -> web.Application:
     app.router.add_post("/relay", relay_handler)
     app.router.add_get("/ws", websocket_handler)
     app.router.add_get("/sessions", sessions_handler)
+    app.router.add_delete("/sessions", clear_sessions_handler)
     app.router.add_post("/replay", replay_handler)
     app.router.add_get("/config", get_config_handler)
     app.router.add_put("/config", put_config_handler)

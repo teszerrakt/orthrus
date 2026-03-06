@@ -72,6 +72,10 @@ export interface SessionUpdatedMsg {
   session: SessionInfo;
 }
 
+export interface SessionsClearedMsg {
+  type: "sessions_cleared";
+}
+
 export interface TlsErrorMsg {
   type: "tls_error";
   client_ip: string;
@@ -85,6 +89,7 @@ export type ServerMsg =
   | StreamEndMsg
   | ErrorMsg
   | SessionUpdatedMsg
+  | SessionsClearedMsg
   | TlsErrorMsg;
 
 // ── WebSocket UI → Server commands ───────────────────────────────────────────
@@ -133,6 +138,10 @@ export interface SaveSessionCmd {
   filename: string;
 }
 
+export interface ClearSessionsCmd {
+  type: "clear_sessions";
+}
+
 export type ClientCmd =
   | ForwardCmd
   | EditCmd
@@ -140,7 +149,8 @@ export type ClientCmd =
   | InjectCmd
   | DelayCmd
   | ForwardAllCmd
-  | SaveSessionCmd;
+  | SaveSessionCmd
+  | ClearSessionsCmd;
 
 // ── UI-local types ────────────────────────────────────────────────────────────
 

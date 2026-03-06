@@ -34,6 +34,10 @@ class SessionManager:
     def remove(self, session_id: str) -> None:
         self._sessions.pop(session_id, None)
 
+    def clear_all(self) -> None:
+        """Remove all sessions."""
+        self._sessions.clear()
+
     # ------------------------------------------------------------------
     # Queries
     # ------------------------------------------------------------------

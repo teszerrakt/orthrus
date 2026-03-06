@@ -1,6 +1,8 @@
 import { useState, useCallback } from "react";
 import { ArrowLeft, X, Plus } from "lucide-react";
 import { useConfig } from "../hooks/useConfig";
+import { TauriTitleBar } from "./TauriTitleBar";
+import { MainTitleBar } from "./MainTitleBar";
 
 interface Props {
   onBack: () => void;
@@ -67,8 +69,12 @@ export function SettingsPage({ onBack }: Props) {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--border)] bg-[var(--bg-panel)] shrink-0">
+      <TauriTitleBar>
+        <MainTitleBar proxyAddress={config?.proxy_address ?? null} />
+      </TauriTitleBar>
+
+      {/* Settings header */}
+      <div className="flex items-center gap-3 px-6 py-3 border-b border-[var(--border)] bg-[var(--bg-panel)] shrink-0">
         <button
           onClick={onBack}
           className="flex items-center gap-2 text-[var(--text-muted)] hover:text-[var(--text)] transition-colors"

@@ -10,6 +10,7 @@ from pydantic import TypeAdapter
 
 from src.models import (
     ClientCmd,
+    ClearSessionsCmd,
     DelayCmd,
     DropCmd,
     EditCmd,
@@ -18,6 +19,7 @@ from src.models import (
     InjectCmd,
     SaveSessionCmd,
     SessionUpdatedMsg,
+    SessionsClearedMsg,
 )
 from src.session_manager import SessionManager
 
@@ -46,7 +48,9 @@ async def websocket_handler(request: web.Request) -> web.WebSocketResponse:
     try:
         async for msg in ws:
             if msg.type == aiohttp.WSMsgType.TEXT:
-                await _handle_command(msg.data, session_manager, ws, mocks_dir)
+                await _handle_command(
+                    msg.data, session_manager, ws, mocks_dir, ws_clients
+                )
             elif msg.type in (
                 aiohttp.WSMsgType.ERROR,
                 aiohttp.WSMsgType.CLOSE,
@@ -64,6 +68,7 @@ async def _handle_command(
     session_manager: SessionManager,
     ws: web.WebSocketResponse,
     mocks_dir: Any,
+    ws_clients: set[web.WebSocketResponse],
 ) -> None:
     try:
         data = json.loads(raw)
@@ -71,6 +76,21 @@ async def _handle_command(
     except Exception as exc:
         logger.warning("Invalid WS command: %s — %s", raw[:200], exc)
         await ws.send_str(json.dumps({"type": "error", "message": str(exc)}))
+        return
+
+    # clear_sessions has no session_id — handle before session lookup
+    if isinstance(cmd, ClearSessionsCmd):
+        session_manager.clear_all()
+        cleared = SessionsClearedMsg(type="sessions_cleared")
+        msg_str = cleared.model_dump_json()
+        dead: list[web.WebSocketResponse] = []
+        for client in ws_clients:
+            try:
+                await client.send_str(msg_str)
+            except Exception:
+                dead.append(client)
+        for client in dead:
+            ws_clients.discard(client)
         return
 
     try:
