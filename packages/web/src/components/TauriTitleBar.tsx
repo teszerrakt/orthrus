@@ -18,8 +18,8 @@ export function TauriTitleBar({ children }: TauriTitleBarProps) {
   const isFullscreen = useFullscreen();
 
   const baseClasses = isTauri()
-    ? // Add margin-top 2px to make sure our content is centered with macOS traffic lights
-      "flex items-center gap-2 px-3 border-b border-[var(--border)] bg-[var(--bg-panel)] shrink-0 h-[28px] mt-2"
+    ? // Add padding-top 2px to make sure our content is centered with macOS traffic lights
+      "flex items-center gap-2 px-3 border-b border-[var(--border)] bg-[var(--bg-panel)] shrink-0 h-[28px] pt-0.5"
     : "flex items-center gap-3 px-4 py-2 border-b border-[var(--border)] bg-[var(--bg-panel)] shrink-0";
 
   return (
