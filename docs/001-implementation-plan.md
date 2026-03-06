@@ -1,3 +1,12 @@
+---
+title: "SSE Event Debugger — Implementation Plan"
+author: teszerrakt
+date_created: 2026-03-05
+date_updated: 2026-03-06
+status: completed
+tags: [architecture, design, sse, mitmproxy]
+---
+
 # SSE Event Debugger — Implementation Plan
 
 ## Overview
