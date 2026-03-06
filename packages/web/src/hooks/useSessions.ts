@@ -95,6 +95,10 @@ export function useSessions() {
           next[msg.session.id] = { ...s, info: msg.session };
           break;
         }
+
+        case "sessions_cleared": {
+          return {};
+        }
       }
 
       return next;
@@ -267,6 +271,15 @@ export function useSessions() {
     });
   }, []);
 
+  const clearSessions = useCallback(() => {
+    // Clear local state immediately for instant UI feedback
+    setSessions({});
+    setSelectedId(null);
+    // Send via both WS (broadcasts to other clients) and REST (ensures backend clears)
+    send({ type: "clear_sessions" });
+    fetch("/sessions", { method: "DELETE" }).catch(() => {});
+  }, [send]);
+
   return {
     sessions,
     selectedId,
@@ -280,5 +293,6 @@ export function useSessions() {
     delay,
     forwardAll,
     saveSession,
+    clearSessions,
   };
 }

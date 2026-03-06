@@ -237,6 +237,11 @@ class SessionUpdatedMsg(BaseModel):
     session: SessionInfo
 
 
+class SessionsClearedMsg(BaseModel):
+    model_config = ConfigDict(frozen=True)
+    type: Literal["sessions_cleared"]
+
+
 class TlsErrorMsg(BaseModel):
     model_config = ConfigDict(frozen=True)
     type: Literal["tls_error"]
@@ -252,6 +257,7 @@ ServerMsg = Annotated[
         StreamEndMsg,
         ErrorMsg,
         SessionUpdatedMsg,
+        SessionsClearedMsg,
         TlsErrorMsg,
     ],
     Field(discriminator="type"),
@@ -314,6 +320,11 @@ class SaveSessionCmd(BaseModel):
     filename: str
 
 
+class ClearSessionsCmd(BaseModel):
+    model_config = ConfigDict(frozen=True)
+    type: Literal["clear_sessions"]
+
+
 ClientCmd = Annotated[
     Union[
         ForwardCmd,
@@ -323,6 +334,7 @@ ClientCmd = Annotated[
         DelayCmd,
         ForwardAllCmd,
         SaveSessionCmd,
+        ClearSessionsCmd,
     ],
     Field(discriminator="type"),
 ]

@@ -1,18 +1,21 @@
 import { useState } from "react";
-import { Settings, Copy, Check } from "lucide-react";
+import { isTauri } from "@tauri-apps/api/core";
+import { Settings, Trash2 } from "lucide-react";
 import { useSessions } from "./hooks/useSessions";
 import { useConfig } from "./hooks/useConfig";
 import { useClientAliases } from "./hooks/useClientAliases";
 import { NetworkTab } from "./components/NetworkTab";
 import { SessionDetail } from "./components/SessionDetail";
 import { SettingsPage } from "./components/SettingsPage";
-import orthrusLogo from "./assets/orthrus.png";
+import { ConfirmModal } from "./components/ConfirmModal";
+import { TauriTitleBar } from "./components/TauriTitleBar";
+import { MainTitleBar } from "./components/MainTitleBar";
 
 type View = "inspector" | "settings";
 
 export default function App() {
   const [view, setView] = useState<View>("inspector");
-  const [copied, setCopied] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const { config } = useConfig();
   const { aliases, setAlias } = useClientAliases();
 
@@ -29,17 +32,10 @@ export default function App() {
     delay,
     forwardAll,
     saveSession,
+    clearSessions,
   } = useSessions();
 
   const selected = selectedId ? sessions[selectedId] : null;
-
-  const handleCopy = () => {
-    if (config?.proxy_address) {
-      navigator.clipboard.writeText(config.proxy_address);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    }
-  };
 
   if (view === "settings") {
     return <SettingsPage onBack={() => setView("inspector")} />;
@@ -47,43 +43,33 @@ export default function App() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* Top bar */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--border)] bg-[var(--bg-panel)] shrink-0">
-        <div className="flex items-center gap-2.5">
-          <img src={orthrusLogo} alt="Orthrus logo" className="h-7 w-7 rounded-sm object-cover" />
+      <TauriTitleBar>
+        <MainTitleBar proxyAddress={config?.proxy_address ?? null} />
+        <div className="ml-auto flex items-center gap-2">
           <span
-            className="text-[var(--text)] text-base tracking-wide lowercase"
-            style={{ fontFamily: '"Satyp", "SF Mono", monospace' }}
+            className={`text-[var(--text-muted)] ${isTauri() ? "text-xs" : "text-sm"}`}
           >
-            orthrus
+            {Object.keys(sessions).length} session
+            {Object.keys(sessions).length !== 1 ? "s" : ""}
           </span>
-        </div>
-        {/* Proxy address — click to copy */}
-        <button
-          onClick={handleCopy}
-          title="Click to copy proxy address"
-          className="flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text)] transition-colors group"
-        >
-          <span className="font-mono">{config?.proxy_address ?? "..."}</span>
-          {copied ? (
-            <Check size={13} className="text-[var(--success)]" />
-          ) : (
-            <Copy size={13} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+          {Object.keys(sessions).length > 0 && (
+            <button
+              onClick={() => setShowClearConfirm(true)}
+              className={`flex items-center justify-center rounded text-[var(--text-muted)] hover:text-[var(--danger)] hover:bg-[var(--bg-hover)] transition-colors ${isTauri() ? "w-6 h-6" : "w-8 h-8"}`}
+              title="Clear all sessions"
+            >
+              <Trash2 size={isTauri() ? 13 : 16} />
+            </button>
           )}
-        </button>
-        <div className="ml-auto flex items-center gap-3">
-          <span className="text-sm text-[var(--text-muted)]">
-            {Object.keys(sessions).length} session{Object.keys(sessions).length !== 1 ? "s" : ""}
-          </span>
           <button
             onClick={() => setView("settings")}
-            className="w-8 h-8 flex items-center justify-center rounded text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--bg-hover)] transition-colors"
+            className={`flex items-center justify-center rounded text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--bg-hover)] transition-colors ${isTauri() ? "w-6 h-6" : "w-8 h-8"}`}
             title="Settings"
           >
-            <Settings size={18} />
+            <Settings size={isTauri() ? 14 : 18} />
           </button>
         </div>
-      </div>
+      </TauriTitleBar>
 
       {/* Main layout: left panel + right panel */}
       <div className="flex flex-1 overflow-hidden">
@@ -107,9 +93,13 @@ export default function App() {
             <SessionDetail
               session={selected}
               onForward={(idx, ev) => forward(selected.info.id, idx, ev)}
-              onEdit={(idx, orig, edited) => edit(selected.info.id, idx, orig, edited)}
+              onEdit={(idx, orig, edited) =>
+                edit(selected.info.id, idx, orig, edited)
+              }
               onDrop={(idx, ev) => drop(selected.info.id, idx, ev)}
-              onInject={(afterIdx, ev) => inject(selected.info.id, afterIdx, ev)}
+              onInject={(afterIdx, ev) =>
+                inject(selected.info.id, afterIdx, ev)
+              }
               onDelay={(idx, ev, ms) => delay(selected.info.id, idx, ev, ms)}
               onForwardAll={() => forwardAll(selected.info.id)}
               onSave={(filename) => saveSession(selected.info.id, filename)}
@@ -121,6 +111,20 @@ export default function App() {
           )}
         </div>
       </div>
+
+      {/* Clear sessions confirmation modal */}
+      <ConfirmModal
+        open={showClearConfirm}
+        title="Clear All Sessions"
+        message={`Are you sure you want to clear all ${Object.keys(sessions).length} session(s)? This action cannot be undone.`}
+        confirmLabel="Clear All"
+        variant="danger"
+        onConfirm={() => {
+          clearSessions();
+          setShowClearConfirm(false);
+        }}
+        onCancel={() => setShowClearConfirm(false)}
+      />
     </div>
   );
 }

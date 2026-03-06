@@ -10,13 +10,25 @@ export function useWebSocket(onMessage: MessageHandler) {
 
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
+  const connectingRef = useRef(false);
 
   const connect = useCallback(() => {
     if (!mountedRef.current) return;
+    // Guard against StrictMode double-mount: if already connecting/open, skip
+    if (connectingRef.current) return;
+    const existing = wsRef.current;
+    if (existing && (existing.readyState === WebSocket.CONNECTING || existing.readyState === WebSocket.OPEN)) {
+      return;
+    }
 
+    connectingRef.current = true;
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
     wsRef.current = ws;
+
+    ws.onopen = () => {
+      connectingRef.current = false;
+    };
 
     ws.onmessage = (e) => {
       try {
@@ -28,12 +40,14 @@ export function useWebSocket(onMessage: MessageHandler) {
     };
 
     ws.onclose = () => {
+      connectingRef.current = false;
       if (!mountedRef.current) return;
       // Reconnect after 2s
       reconnectTimerRef.current = setTimeout(connect, 2000);
     };
 
     ws.onerror = () => {
+      connectingRef.current = false;
       ws.close();
     };
   }, []);
@@ -43,8 +57,10 @@ export function useWebSocket(onMessage: MessageHandler) {
     connect();
     return () => {
       mountedRef.current = false;
+      connectingRef.current = false;
       if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
       wsRef.current?.close();
+      wsRef.current = null;
     };
   }, [connect]);
 
