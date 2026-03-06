@@ -14,6 +14,7 @@ from src.models import (
     MockConfig,
     MockStep,
     PassthroughStep,
+    PipelineStep,
     RequestInfo,
     SessionInfo,
     SessionStatus,
@@ -61,7 +62,7 @@ class Session:
     async def enqueue_upstream_event(self, event: SSEEvent) -> int:
         """
         Accept an upstream event, assign it the next index, and either
-        auto-forward it immediately or hold it for QA.
+        auto-forward it immediately or hold it for User.
 
         Returns the assigned index so the caller can broadcast it to the UI.
         """
@@ -87,12 +88,12 @@ class Session:
     async def signal_upstream_done(self) -> None:
         """Called when the upstream SSE stream closes."""
         self._upstream_done = True
-        # If there are no pending events waiting for QA action, close immediately
+        # If there are no pending events waiting for User action, close immediately
         if not self._pending_events:
             await self.close_stream()
 
     # ------------------------------------------------------------------
-    # QA control side (called by WebSocket handler)
+    # User control side (called by WebSocket handler)
     # ------------------------------------------------------------------
 
     async def forward(self, index: int) -> None:
@@ -209,7 +210,7 @@ class Session:
         parsed = urlparse(self.request.url)
         url_pattern = _re.escape(parsed.path)
 
-        steps = []
+        steps: list[PipelineStep] = []
         for entry in self._history:
             if entry.action == EventAction.FORWARD:
                 steps.append(

@@ -79,7 +79,7 @@ async def relay_handler(request: web.Request) -> web.StreamResponse:
     1. Create a Session.
     2. Notify all WebSocket clients of the new session.
     3. Start background task: stream upstream SSE → session pending queue.
-    4. Start background task: pump pending events through QA controls.
+    4. Start background task: pump pending events through User controls.
     5. Stream approved events back to the client as SSE.
     """
     session_manager: SessionManager = request.app["session_manager"]
@@ -163,8 +163,8 @@ async def _read_upstream(
     req_info: RequestInfo,
     ws_broadcaster,
 ) -> None:
-    from src.sse_client import stream_upstream_sse
     from src.models import EventMsg, SessionUpdatedMsg
+    from src.sse_client import stream_upstream_sse
 
     async def on_event(event: SSEEvent) -> None:
         index = await session.enqueue_upstream_event(event)
