@@ -35,6 +35,8 @@ cd ui && bun run build && cd ..
 ./run.sh
 ```
 
+`run.sh` auto-builds the UI only when inputs change (`ui/src`, `ui/index.html`, `ui/package.json`, `ui/bun.lock`, `ui/vite.config.ts`, `ui/tsconfig*.json`).
+
 Open `http://localhost:29000` in your browser.
 
 On your mobile device, set the WiFi proxy to `<your-machine-ip>:28080`.
