@@ -1,8 +1,5 @@
 {
-  "sse_patterns": [
-    "*/v2/stream/recentchange",
-    "*/v3/flight/search/sse*"
-  ],
+  "sse_patterns": ["*/sse", "*/stream"],
   "relay_host": "127.0.0.1",
   "relay_port": 29000
 }
