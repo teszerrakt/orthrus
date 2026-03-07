@@ -39,6 +39,7 @@ export default function App() {
     forwardAll,
     saveSession,
     clearSessions,
+    closeSession,
   } = useSessions();
 
   const selected = selectedId ? sessions[selectedId] : null;
@@ -130,6 +131,7 @@ export default function App() {
               onDelay={(idx, ev, ms) => delay(selected.info.id, idx, ev, ms)}
               onForwardAll={() => forwardAll(selected.info.id)}
               onSave={(filename) => saveSession(selected.info.id, filename)}
+              onClose={() => closeSession(selected.info.id)}
             />
           ) : (
             <div className="flex flex-col items-center justify-center h-full gap-4 text-center">

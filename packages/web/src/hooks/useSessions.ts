@@ -281,6 +281,24 @@ export function useSessions() {
     apiFetch("/sessions", { method: "DELETE" }).catch(() => {});
   }, [send]);
 
+  const closeSession = useCallback(
+    (sessionId: string) => {
+      const cmd: ClientCmd = { type: "close_session", session_id: sessionId };
+      send(cmd);
+      // Optimistically mark session as completed; the backend will also
+      // broadcast stream_end which sets status to "completed" in handleMessage
+      setSessions((prev) => {
+        const s = prev[sessionId];
+        if (!s) return prev;
+        return {
+          ...prev,
+          [sessionId]: { ...s, info: { ...s.info, status: "completed" } },
+        };
+      });
+    },
+    [send],
+  );
+
   return {
     sessions,
     selectedId,
@@ -295,5 +313,6 @@ export function useSessions() {
     forwardAll,
     saveSession,
     clearSessions,
+    closeSession,
   };
 }

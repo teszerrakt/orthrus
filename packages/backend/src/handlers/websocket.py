@@ -11,6 +11,7 @@ from pydantic import TypeAdapter
 from src.models import (
     ClientCmd,
     ClearSessionsCmd,
+    CloseSessionCmd,
     DelayCmd,
     DropCmd,
     EditCmd,
@@ -32,7 +33,7 @@ async def websocket_handler(request: web.Request) -> web.WebSocketResponse:
 
     Bidirectional WebSocket channel between the relay server and the Web UI.
     - Server pushes: new_session, event, stream_end, error, session_updated
-    - Client sends: forward, edit, drop, inject, delay, forward_all, save_session
+    - Client sends: forward, edit, drop, inject, delay, forward_all, save_session, close_session
     """
     ws = web.WebSocketResponse(heartbeat=30)
     await ws.prepare(request)
@@ -122,6 +123,12 @@ async def _handle_command(
 
     elif isinstance(cmd, SaveSessionCmd):
         await _save_session(session, cmd.filename, mocks_dir, ws)
+        return
+
+    elif isinstance(cmd, CloseSessionCmd):
+        # Signal the downstream relay handler to stop streaming. The relay
+        # handler's finally-block will cancel upstream, send stream_end, etc.
+        await session.close_stream()
         return
 
     # Broadcast updated session info

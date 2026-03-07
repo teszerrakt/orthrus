@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 import { json } from "@codemirror/lang-json";
 import { oneDark } from "@codemirror/theme-one-dark";
@@ -93,7 +94,21 @@ const orthrusTheme = EditorView.theme({
 // Search at the top of the editor, like VS Code
 const searchExtension = search({ top: true });
 
-const JSON_EXTENSIONS = [json(), oneDark, orthrusTheme, searchExtension];
+// Shared base extensions (language + themes + search)
+const BASE_EXTENSIONS = [json(), oneDark, orthrusTheme, searchExtension];
+
+// In read-only mode, hide the replace toggle and replace row from the search
+// panel. We scope styles under `.cm-readonly` (which CodeMirror adds when
+// readOnly is set) so editable editors are unaffected.
+const hideReplaceTheme = EditorView.theme({
+  // Hide the toggle-replace chevron button
+  "&.cm-editor .cm-search [name=select]": { display: "none" },
+  // Hide replace input + replace / replace-all buttons
+  "&.cm-editor .cm-search [name=replace]": { display: "none" },
+  "&.cm-editor .cm-search [name=replaceAll]": { display: "none" },
+  // Hide the <br> that separates find row from replace row
+  "&.cm-editor .cm-search br": { display: "none" },
+});
 
 interface Props {
   /** The raw value to display/edit */
@@ -132,10 +147,16 @@ export function CodeBlock({
   const displayValue = prettyPrint ? tryPretty(value) : value;
   const showLineNumbers = lineNumbers ?? !readOnly;
 
+  // In read-only mode, add the theme that hides the replace UI
+  const extensions = useMemo(
+    () => (readOnly ? [...BASE_EXTENSIONS, hideReplaceTheme] : BASE_EXTENSIONS),
+    [readOnly],
+  );
+
   return (
     <CodeMirror
       value={displayValue}
-      extensions={JSON_EXTENSIONS}
+      extensions={extensions}
       readOnly={readOnly}
       editable={!readOnly}
       onChange={onChange}

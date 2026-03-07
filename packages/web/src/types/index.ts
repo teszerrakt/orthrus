@@ -142,6 +142,11 @@ export interface ClearSessionsCmd {
   type: "clear_sessions";
 }
 
+export interface CloseSessionCmd {
+  type: "close_session";
+  session_id: string;
+}
+
 export type ClientCmd =
   | ForwardCmd
   | EditCmd
@@ -150,7 +155,8 @@ export type ClientCmd =
   | DelayCmd
   | ForwardAllCmd
   | SaveSessionCmd
-  | ClearSessionsCmd;
+  | ClearSessionsCmd
+  | CloseSessionCmd;
 
 // ── UI-local types ────────────────────────────────────────────────────────────
 

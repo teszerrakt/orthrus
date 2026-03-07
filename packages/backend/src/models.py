@@ -325,6 +325,12 @@ class ClearSessionsCmd(BaseModel):
     type: Literal["clear_sessions"]
 
 
+class CloseSessionCmd(BaseModel):
+    model_config = ConfigDict(frozen=True)
+    type: Literal["close_session"]
+    session_id: str
+
+
 ClientCmd = Annotated[
     Union[
         ForwardCmd,
@@ -335,6 +341,7 @@ ClientCmd = Annotated[
         ForwardAllCmd,
         SaveSessionCmd,
         ClearSessionsCmd,
+        CloseSessionCmd,
     ],
     Field(discriminator="type"),
 ]

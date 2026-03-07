@@ -3,9 +3,11 @@ import type { SessionState, SSEEvent } from "../types";
 import { EventRow } from "./EventRow";
 import { RequestPreview } from "./RequestPreview";
 import { AutoForwardToggle } from "./AutoForwardToggle";
+import { ConfirmModal } from "./ConfirmModal";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import { X } from "lucide-react";
 
 interface Props {
   session: SessionState;
@@ -16,6 +18,7 @@ interface Props {
   onDelay: (index: number, event: SSEEvent, delayMs: number) => void;
   onForwardAll: () => void;
   onSave: (filename: string) => void;
+  onClose: () => void;
 }
 
 function statusBadge(status: string) {
@@ -35,10 +38,14 @@ export function SessionDetail({
   onDelay,
   onForwardAll,
   onSave,
+  onClose,
 }: Props) {
   const [autoForward, setAutoForward] = useState(false);
   const [saveFilename, setSaveFilename] = useState("");
   const [showSave, setShowSave] = useState(false);
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+
+  const isActive = session.info.status === "active";
 
   const handleAutoForwardChange = (v: boolean) => {
     setAutoForward(v);
@@ -71,6 +78,18 @@ export function SessionDetail({
           <Button variant="outline" size="xs" onClick={() => setShowSave((v) => !v)}>
             Save Mock
           </Button>
+
+          {isActive && (
+            <Button
+              variant="danger"
+              size="xs"
+              onClick={() => setShowCloseConfirm(true)}
+              title="Force close this connection"
+            >
+              <X size={12} className="mr-1" />
+              Close
+            </Button>
+          )}
         </div>
       </div>
 
@@ -142,6 +161,20 @@ export function SessionDetail({
           />
         )}
       </div>
+
+      {/* Force-close confirmation modal */}
+      <ConfirmModal
+        open={showCloseConfirm}
+        title="Close Connection"
+        message="Force close this SSE connection? The upstream stream will be cancelled and the client will be disconnected."
+        confirmLabel="Close Connection"
+        variant="danger"
+        onConfirm={() => {
+          onClose();
+          setShowCloseConfirm(false);
+        }}
+        onCancel={() => setShowCloseConfirm(false)}
+      />
     </div>
   );
 }
