@@ -10,7 +10,7 @@ from aiohttp import web
 
 logger = logging.getLogger(__name__)
 
-_PROJECT_ROOT = Path(os.environ.get("ORTHRUS_ROOT", str(Path(__file__).parents[3])))
+_PROJECT_ROOT = Path(os.environ.get("ORTHRUS_ROOT", str(Path(__file__).parents[4])))
 CONFIG_FILE = _PROJECT_ROOT / "config.json"
 
 _DEFAULT_CONFIG = {

@@ -108,8 +108,10 @@ class SSEInterceptorAddon:
         flow.request.port = self._relay_port
         flow.request.scheme = "http"
 
-        # Point to /relay with target param
-        flow.request.path = f"/relay?target={_url_encode(original_url)}"
+        # Point to /relay with target param + original HTTP method
+        flow.request.path = (
+            f"/relay?target={_url_encode(original_url)}&method={flow.request.method}"
+        )
 
         # Relay handler expects POST
         flow.request.method = "POST"

@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
-import { AlertTriangle, ChevronDown, ChevronRight, Pencil } from "lucide-react";
+import { AlertTriangle, CheckCircle, ChevronDown, ChevronRight, Pencil, Shield } from "lucide-react";
 import type { SessionState } from "../types";
 import { CertModal } from "./CertModal";
 import { detectOS } from "../utils/detectOS";
+import { useCertStatus } from "../hooks/useCertStatus";
 
 interface Props {
   sessions: Record<string, SessionState>;
@@ -53,6 +54,7 @@ export function NetworkTab({
   const [editingIp, setEditingIp] = useState<string | null>(null);
   const [editingAlias, setEditingAlias] = useState("");
   const [certModalIp, setCertModalIp] = useState<string | null>(null);
+  const { certStatus, reloadCertStatus } = useCertStatus();
 
   const groups = useMemo<GroupData[]>(() => {
     const sorted = Object.values(sessions).sort(
@@ -200,16 +202,35 @@ export function NetworkTab({
                     </div>
                   </div>
 
-                  {showTlsWarning && group.ip ? (
+                  {group.ip ? (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         setCertModalIp(group.ip);
                       }}
-                      className="inline-flex items-center gap-1 rounded border border-[var(--warning)]/40 bg-[var(--warning)]/10 px-1.5 py-0.5 text-xs text-[var(--warning)] hover:bg-[var(--warning)]/20"
-                      title="Certificate setup required"
+                      className={[
+                        "inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-xs",
+                        showTlsWarning
+                          ? "border-[var(--warning)]/40 bg-[var(--warning)]/10 text-[var(--warning)] hover:bg-[var(--warning)]/20"
+                          : certStatus?.installed
+                            ? "border-[var(--success)]/40 bg-[var(--success)]/10 text-[var(--success)] hover:bg-[var(--success)]/20"
+                            : "border-[var(--text-muted)]/40 bg-[var(--text-muted)]/10 text-[var(--text-muted)] hover:bg-[var(--text-muted)]/20",
+                      ].join(" ")}
+                      title={
+                        showTlsWarning
+                          ? "Certificate setup required"
+                          : certStatus?.installed
+                            ? "Certificate installed and trusted"
+                            : "Certificate not installed"
+                      }
                     >
-                      <AlertTriangle size={12} />
+                      {showTlsWarning ? (
+                        <AlertTriangle size={12} />
+                      ) : certStatus?.installed ? (
+                        <CheckCircle size={12} />
+                      ) : (
+                        <Shield size={12} />
+                      )}
                       Cert
                     </button>
                   ) : null}
@@ -275,6 +296,7 @@ export function NetworkTab({
         proxyAddress={proxyAddress}
         onResolved={() => {
           if (certModalIp) onClearTlsError(certModalIp);
+          void reloadCertStatus();
         }}
       />
     </div>
