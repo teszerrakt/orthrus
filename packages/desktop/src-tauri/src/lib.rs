@@ -168,15 +168,45 @@ pub fn run() {
                 // Kill backend when window is destroyed (app closing)
                 let tauri::WindowEvent::Destroyed = event else { return };
                 let Some(state) = window.try_state::<BackendProcess>() else { return };
-                let Ok(mut guard) = state.0.lock() else { return };
-                let Some(child) = guard.take() else { return };
-
-                let _ = child.kill();
-                log(&log_handle, "[backend] killed sidecar process");
+                kill_sidecar(&state, &log_handle);
             }
         })
-        .run(tauri::generate_context!())
-        .expect("error while running Orthrus");
+        .build(tauri::generate_context!())
+        .expect("error while building Orthrus")
+        .run({
+            let log_handle = log_handle.clone();
+            move |app, event| {
+                // Safety net: also kill on RunEvent::Exit in case window event didn't fire
+                if let tauri::RunEvent::Exit = event {
+                    log(&log_handle, "[app] RunEvent::Exit — ensuring sidecar is stopped");
+                    let Some(state) = app.try_state::<BackendProcess>() else { return };
+                    kill_sidecar(&state, &log_handle);
+                }
+            }
+        });
+}
+
+/// Kill the sidecar process by extracting it from state.
+fn kill_sidecar(state: &BackendProcess, log_handle: &Option<LogHandle>) {
+    let Ok(mut guard) = state.0.lock() else { return };
+    let Some(child) = guard.take() else { return };
+
+    let pid = child.pid();
+    let _ = child.kill();
+    log(log_handle, &format!("[backend] killed sidecar process (pid={pid})"));
+
+    // PyInstaller --onefile re-execs itself, so the actual process may have a
+    // different PID than what child.pid() returns. Kill by known ports as a
+    // reliable fallback to clean up any surviving child processes.
+    #[cfg(unix)]
+    {
+        for port in ["28080", "29000"] {
+            let _ = std::process::Command::new("bash")
+                .args(["-c", &format!("lsof -ti:{port} | xargs kill -9 2>/dev/null")])
+                .output();
+        }
+        log(log_handle, "[backend] cleaned up processes on ports 28080, 29000");
+    }
 }
 
 /// Wrapper to store the sidecar child process handle in Tauri state.
