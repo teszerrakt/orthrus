@@ -29,5 +29,8 @@ packages/desktop/src-tauri/target/
 # Misc
 .ruff_cache/
 
+# User config (editable at runtime)
+config.json
+
 # Opencode
 .tmp/

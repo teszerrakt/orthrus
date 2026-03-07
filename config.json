@@ -1,5 +1,0 @@
-{
-  "sse_patterns": ["*/sse", "*/stream"],
-  "relay_host": "127.0.0.1",
-  "relay_port": 29000
-}
