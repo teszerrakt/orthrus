@@ -12,13 +12,15 @@ import { TauriTitleBar } from "./components/TauriTitleBar";
 import { MainTitleBar } from "./components/MainTitleBar";
 import { AppFooter } from "./components/AppFooter";
 import { VersionInfo } from "./components/VersionInfo";
+import { SplashScreen } from "./components/SplashScreen";
 
 type View = "inspector" | "settings";
 
 export default function App() {
   const [view, setView] = useState<View>("inspector");
   const [showClearConfirm, setShowClearConfirm] = useState(false);
-  const { config } = useConfig();
+  const [splashDone, setSplashDone] = useState(!isTauri());
+  const { config, loading: configLoading } = useConfig();
   const { aliases, setAlias } = useClientAliases();
 
   const {
@@ -43,8 +45,16 @@ export default function App() {
     return <SettingsPage onBack={() => setView("inspector")} />;
   }
 
+  const showSplash = !splashDone && isTauri();
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
+      {showSplash && (
+        <SplashScreen
+          fadeOut={!configLoading}
+          onComplete={() => setSplashDone(true)}
+        />
+      )}
       <TauriTitleBar>
         <MainTitleBar proxyAddress={config?.proxy_address ?? null} />
         <div className="ml-auto flex items-center gap-2">

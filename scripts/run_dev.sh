@@ -35,7 +35,7 @@ echo "[run_dev] Starting mitmproxy on :${PROXY_PORT}"
 MITM_PID=$!
 
 echo "[run_dev] Starting Vite dev server"
-(cd "$ORTHRUS_ROOT" && bun run dev:web) &
+(cd "$ORTHRUS_ROOT/packages/web" && bunx --bun vite) &
 VITE_PID=$!
 
 cleanup() {
