@@ -36,18 +36,17 @@ export function MainTitleBar({ proxyAddress }: MainTitleBarProps) {
         </div>
       )}
       {/* App title + listening address or loading spinner */}
-      <div className="flex items-center gap-1.5" data-tauri-drag-region>
+      <div className="flex items-center gap-1.5">
         <span
-          data-tauri-drag-region
           className="text-[var(--text)] tracking-wide uppercase font-semibold text-base"
           style={{ fontFamily: '"Satyp", "SF Mono", monospace' }}
         >
           orthrus
         </span>
-        <span data-tauri-drag-region className="text-[var(--text-muted)] text-sm">|</span>
+        <span className="text-[var(--text-muted)] text-sm">|</span>
         {proxyAddress ? (
           <>
-            <span data-tauri-drag-region className="text-[var(--text-muted)] text-sm">
+            <span className="text-[var(--text-muted)] text-sm">
               Listening on
             </span>
             <button
