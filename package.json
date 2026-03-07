@@ -23,7 +23,7 @@
     "dev:desktop": "./scripts/run_desktop.sh",
     "start:web": "./scripts/run.sh",
     "build:web": "bun --cwd packages/web build",
-    "build:desktop": "bun --cwd packages/desktop build",
+    "build:desktop": "./scripts/build_backend.sh && bun --cwd packages/desktop build",
     "test:backend": "bun run test:backend:unit && bun run test:backend:integration",
     "test:backend:unit": "cd packages/backend && uv run pytest tests/unit/ -v",
     "test:backend:integration": "cd packages/backend && uv run pytest tests/integration/ -v",

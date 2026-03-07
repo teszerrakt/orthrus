@@ -22,6 +22,7 @@ Mobile/Browser ──WiFi proxy──► mitmproxy :28080
 
 - [Python 3.12+](https://www.python.org/downloads/) with [uv](https://docs.astral.sh/uv/getting-started/installation/)
 - [bun](https://bun.sh/docs/installation)
+- [Rust](https://www.rust-lang.org/tools/install) (desktop app only)
 
 ## Quick Start
 

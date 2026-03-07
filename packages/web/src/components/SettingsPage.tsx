@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { isTauri } from "@tauri-apps/api/core";
 import { ArrowLeft, X, Plus } from "lucide-react";
 import { useConfig } from "../hooks/useConfig";
 import { TauriTitleBar } from "./TauriTitleBar";
@@ -72,7 +73,15 @@ export function SettingsPage({ onBack }: Props) {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <TauriTitleBar>
-        <MainTitleBar proxyAddress={config?.proxy_address ?? null} />
+        {isTauri() ? (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="pointer-events-auto">
+              <MainTitleBar proxyAddress={config?.proxy_address ?? null} />
+            </div>
+          </div>
+        ) : (
+          <MainTitleBar proxyAddress={config?.proxy_address ?? null} />
+        )}
       </TauriTitleBar>
 
       {/* Settings header */}

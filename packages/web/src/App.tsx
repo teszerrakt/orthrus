@@ -56,7 +56,16 @@ export default function App() {
         />
       )}
       <TauriTitleBar>
-        <MainTitleBar proxyAddress={config?.proxy_address ?? null} />
+        {/* In Tauri: center the title absolutely; in browser: normal left-aligned flow */}
+        {isTauri() ? (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="pointer-events-auto">
+              <MainTitleBar proxyAddress={config?.proxy_address ?? null} />
+            </div>
+          </div>
+        ) : (
+          <MainTitleBar proxyAddress={config?.proxy_address ?? null} />
+        )}
         <div className="ml-auto flex items-center gap-2">
           <span
             className={`text-[var(--text-muted)] ${isTauri() ? "text-xs" : "text-sm"}`}
