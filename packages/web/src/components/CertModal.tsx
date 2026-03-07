@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Shield, CheckCircle, Loader2 } from "lucide-react";
 import type { CertStatus } from "../types";
 import type { DetectedOS } from "../utils/detectOS";
 import { apiFetch } from "../utils/api";
+import { useCertStatus } from "../hooks/useCertStatus";
 import {
   Dialog,
   DialogContent,
@@ -31,21 +32,9 @@ export function CertModal({
   proxyAddress,
   onResolved,
 }: CertModalProps) {
-  const [status, setStatus] = useState<CertStatus | null>(null);
+  const { certStatus: status, reloadCertStatus } = useCertStatus();
   const [installing, setInstalling] = useState(false);
   const [installError, setInstallError] = useState<string | null>(null);
-
-  const reloadStatus = async (): Promise<CertStatus> => {
-    const res = await apiFetch("/cert/status");
-    const body = (await res.json()) as CertStatus;
-    setStatus(body);
-    return body;
-  };
-
-  useEffect(() => {
-    if (!open) return;
-    void reloadStatus();
-  }, [open]);
 
   const installCert = async () => {
     setInstalling(true);
@@ -59,11 +48,10 @@ export function CertModal({
       };
       if (!res.ok || !body.ok) {
         setInstallError(body.error ?? "Failed to install certificate");
-      } else {
-        setStatus(body.status ?? null);
       }
-      const nextStatus = body.status ?? (await reloadStatus());
-      if (nextStatus?.installed) {
+      // Reload shared status so NetworkTab badge updates too
+      await reloadCertStatus();
+      if (body.status?.installed) {
         onResolved();
       }
     } catch {

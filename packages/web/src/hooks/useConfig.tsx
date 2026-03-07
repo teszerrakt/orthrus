@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import type { ReactNode } from "react";
 import type { AppConfig } from "../types";
 import { apiFetch } from "../utils/api";
 
-interface UseConfigResult {
+interface ConfigContextValue {
   config: AppConfig | null;
   loading: boolean;
   error: string | null;
@@ -10,7 +11,9 @@ interface UseConfigResult {
   reload: () => void;
 }
 
-export function useConfig(): UseConfigResult {
+const ConfigContext = createContext<ConfigContextValue | null>(null);
+
+export function ConfigProvider({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -75,5 +78,15 @@ export function useConfig(): UseConfigResult {
 
   const reload = useCallback(() => setRevision((r) => r + 1), []);
 
-  return { config, loading, error, saveConfig, reload };
+  return (
+    <ConfigContext.Provider value={{ config, loading, error, saveConfig, reload }}>
+      {children}
+    </ConfigContext.Provider>
+  );
+}
+
+export function useConfig(): ConfigContextValue {
+  const ctx = useContext(ConfigContext);
+  if (!ctx) throw new Error("useConfig must be used within <ConfigProvider>");
+  return ctx;
 }

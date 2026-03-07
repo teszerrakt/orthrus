@@ -57,7 +57,7 @@ export function NetworkTab({
   const [editingIp, setEditingIp] = useState<string | null>(null);
   const [editingAlias, setEditingAlias] = useState("");
   const [certModalIp, setCertModalIp] = useState<string | null>(null);
-  const { certStatus, reloadCertStatus } = useCertStatus();
+  const { certStatus } = useCertStatus();
 
   const groups = useMemo<GroupData[]>(() => {
     const sorted = Object.values(sessions).sort(
@@ -303,7 +303,6 @@ export function NetworkTab({
         proxyAddress={proxyAddress}
         onResolved={() => {
           if (certModalIp) onClearTlsError(certModalIp);
-          void reloadCertStatus();
         }}
       />
     </div>
