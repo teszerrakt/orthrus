@@ -13,7 +13,7 @@ import { MainTitleBar } from "./components/MainTitleBar";
 import { AppFooter } from "./components/AppFooter";
 import { VersionInfo } from "./components/VersionInfo";
 import { SplashScreen } from "./components/SplashScreen";
-import orthrusLogo from "./assets/orthrus.png";
+import boredOrthrus from "./assets/bored-orthrus.webp";
 
 type View = "inspector" | "settings";
 
@@ -128,11 +128,7 @@ export default function App() {
             />
           ) : (
             <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
-              <img
-                src={orthrusLogo}
-                alt=""
-                className="w-12 h-12 rounded-sm object-cover opacity-10"
-              />
+              <img src={boredOrthrus} alt="" className="w-56 opacity-50" />
               <div className="flex flex-col gap-1">
                 <span className="text-[var(--text-muted)] text-sm">
                   Select a session to inspect events
