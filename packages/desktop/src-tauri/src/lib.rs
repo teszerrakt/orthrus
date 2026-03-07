@@ -55,7 +55,8 @@ pub fn run() {
     let log_handle = setup_log_file();
 
     let version = env!("CARGO_PKG_VERSION");
-    log(&log_handle, &format!("[setup] Orthrus v{version} starting..."));
+    let hash = env!("GIT_HASH");
+    log(&log_handle, &format!("[setup] Orthrus v{version}-{hash} starting..."));
 
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())

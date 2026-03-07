@@ -8,6 +8,7 @@ from pathlib import Path
 
 import aiohttp
 from aiohttp import web
+from aiohttp.typedefs import Handler
 
 from src.handlers.cert import (
     get_cert_download_handler,
@@ -24,6 +25,30 @@ from src.mock_loader import MockLoader
 from src.session_manager import SessionManager
 
 logger = logging.getLogger(__name__)
+
+_CORS_HEADERS = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+}
+
+
+@web.middleware
+async def cors_middleware(
+    request: web.Request,
+    handler: Handler,
+) -> web.StreamResponse:
+    """Add CORS headers to all responses.
+
+    Required for Tauri production mode where the frontend origin
+    is tauri://localhost and the backend is http://localhost:29000.
+    """
+    if request.method == "OPTIONS":
+        return web.Response(headers=_CORS_HEADERS)
+    response = await handler(request)
+    response.headers.update(_CORS_HEADERS)
+    return response
+
 
 _PROJECT_ROOT = Path(
     os.environ.get("ORTHRUS_ROOT", str(Path(__file__).parent.parent.parent))
@@ -69,7 +94,7 @@ async def on_shutdown(app: web.Application) -> None:
 
 
 def create_app(mocks_dir: Path, auto_forward: bool = False) -> web.Application:
-    app = web.Application()
+    app = web.Application(middlewares=[cors_middleware])
 
     # Shared state
     app["session_manager"] = SessionManager()
