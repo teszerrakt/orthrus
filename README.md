@@ -47,28 +47,9 @@ bun run build:desktop      # build .app + .dmg
 | **Edit** | Modify the event data, then forward |
 | **Drop** | Discard the event (client never sees it) |
 | **Inject** | Send a synthetic event not from the real stream |
-| **Delay** | Wait N ms then forward |
 | **Forward All** | Flush all pending events without reviewing |
 
 **Auto-Forward**: Toggle in the toolbar to let all events pass through automatically.
-
-## Mock Files
-
-Drop `.json` files into `mocks/`. Set `"enabled": true` on exactly one to activate it. Mock files are hot-reloaded.
-
-```json
-{
-  "enabled": true,
-  "url_pattern": "*/sse*",
-  "mode": "pipeline",
-  "pipeline": [
-    { "action": "passthrough" },
-    { "action": "delay", "delay_ms": 2000 },
-    { "action": "mock", "event": { "event": "injected", "data": "{}", "id": null, "retry": null } },
-    { "action": "passthrough_rest" }
-  ]
-}
-```
 
 ## Configuration
 

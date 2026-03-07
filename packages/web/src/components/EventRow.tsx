@@ -133,12 +133,7 @@ export function EventRow({
               >
                 Drop
               </button>
-              <button
-                onClick={() => setModal({ kind: "delay", index: p.index, event: p.event })}
-                className="px-2 py-1 text-xs text-[var(--warning)] border border-[var(--warning)]/40 rounded hover:bg-[var(--warning)]/10 transition-colors"
-              >
-                Delay
-              </button>
+              {/* Delay button hidden — redundant with breakpoint-based workflow */}
               <button
                 onClick={() => setModal({ kind: "inject", afterIndex: p.index })}
                 className="px-2 py-1 text-xs text-[var(--inject)] border border-[var(--inject)]/40 rounded hover:bg-[var(--inject)]/10 transition-colors"
