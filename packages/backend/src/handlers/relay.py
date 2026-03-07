@@ -59,12 +59,13 @@ def _format_sse(event: SSEEvent) -> bytes:
 
 def _build_request_info(request: web.Request) -> RequestInfo:
     target_url = request.query.get("target", "")
+    original_method = request.query.get("method", request.method)
     client_ip = request.headers.get("x-original-client-ip") or request.remote
     user_agent = request.headers.get("user-agent")
     headers = {k: v for k, v in request.headers.items() if k.lower() not in _HOP_BY_HOP}
     return RequestInfo(
         url=target_url,
-        method=request.method,
+        method=original_method,
         headers=headers,
         body=None,  # filled after reading body
         client_ip=client_ip,

@@ -62,9 +62,9 @@ async def _is_cert_trusted_macos() -> bool:
     code, out, _ = await _run_cmd(
         "security",
         "find-certificate",
-        "-a",
         "-Z",
-        "-k",
+        "-c",
+        "mitmproxy",
         str(LOGIN_KEYCHAIN),
     )
     if code != 0:

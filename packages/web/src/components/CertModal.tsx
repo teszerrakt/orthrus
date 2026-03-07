@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { Download, Shield, X } from "lucide-react";
+import { Shield, X, CheckCircle, Loader2 } from "lucide-react";
 import type { CertStatus } from "../types";
 import type { DetectedOS } from "../utils/detectOS";
+import { apiFetch } from "../utils/api";
 
 interface CertModalProps {
   open: boolean;
@@ -27,7 +28,7 @@ export function CertModal({
   const [installError, setInstallError] = useState<string | null>(null);
 
   const reloadStatus = async (): Promise<CertStatus> => {
-    const res = await fetch("/cert/status");
+    const res = await apiFetch("/cert/status");
     const body = (await res.json()) as CertStatus;
     setStatus(body);
     return body;
@@ -53,7 +54,7 @@ export function CertModal({
     setInstalling(true);
     setInstallError(null);
     try {
-      const res = await fetch("/cert/install", { method: "POST" });
+      const res = await apiFetch("/cert/install", { method: "POST" });
       const body = (await res.json()) as {
         ok?: boolean;
         error?: string;
@@ -111,27 +112,29 @@ export function CertModal({
             <div className="rounded border border-[var(--border)] bg-[var(--bg)] p-3">
               <div className="font-medium text-[var(--text)]">macOS setup</div>
               <p className="mt-1 text-[var(--text-muted)]">
-                Install and trust the mitmproxy certificate in your login keychain (no admin
-                privileges required).
+                Install and trust the mitmproxy CA certificate in your login keychain.
+                This allows the proxy to inspect HTTPS traffic.
               </p>
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                {status?.auto_install_supported ? (
+                {status?.installed ? (
+                  <span className="inline-flex items-center gap-1.5 text-sm text-[var(--success)]">
+                    <CheckCircle size={14} />
+                    Certificate installed and trusted
+                  </span>
+                ) : status?.auto_install_supported ? (
                   <button
                     onClick={installCert}
                     disabled={installing}
                     className="inline-flex items-center gap-1.5 rounded bg-[var(--warning)] px-3 py-1.5 text-sm font-medium text-black hover:opacity-90 disabled:opacity-60"
                   >
-                    <Shield size={14} />
+                    {installing ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                      <Shield size={14} />
+                    )}
                     {installing ? "Installing..." : "Install & Trust"}
                   </button>
                 ) : null}
-                <a
-                  href="/cert"
-                  className="inline-flex items-center gap-1.5 rounded border border-[var(--border)] px-3 py-1.5 text-sm text-[var(--text)] hover:bg-[var(--bg-hover)]"
-                >
-                  <Download size={14} />
-                  Download cert
-                </a>
               </div>
               {installError ? <div className="mt-2 text-[var(--danger)]">{installError}</div> : null}
             </div>

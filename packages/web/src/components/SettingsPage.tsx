@@ -3,6 +3,8 @@ import { ArrowLeft, X, Plus } from "lucide-react";
 import { useConfig } from "../hooks/useConfig";
 import { TauriTitleBar } from "./TauriTitleBar";
 import { MainTitleBar } from "./MainTitleBar";
+import { AppFooter } from "./AppFooter";
+import { VersionInfo } from "./VersionInfo";
 
 interface Props {
   onBack: () => void;
@@ -180,6 +182,10 @@ export function SettingsPage({ onBack }: Props) {
           </>
         )}
       </div>
+
+      <AppFooter>
+        <VersionInfo />
+      </AppFooter>
     </div>
   );
 }

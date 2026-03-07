@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import type { AppConfig } from "../types";
+import { apiFetch } from "../utils/api";
 
 interface UseConfigResult {
   config: AppConfig | null;
@@ -17,26 +18,41 @@ export function useConfig(): UseConfigResult {
 
   useEffect(() => {
     let cancelled = false;
+    let attempt = 0;
+    const maxAttempts = 15;
+    const retryDelay = 2000;
+
     setLoading(true);
     setError(null);
 
-    fetch("/config")
-      .then((res) => {
-        if (!res.ok) throw new Error(`Server returned ${res.status}`);
-        return res.json() as Promise<AppConfig>;
-      })
-      .then((data) => {
-        if (!cancelled) {
-          setConfig(data);
-          setLoading(false);
-        }
-      })
-      .catch((err: unknown) => {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Failed to load config");
-          setLoading(false);
-        }
-      });
+    const tryFetch = () => {
+      if (cancelled) return;
+      attempt++;
+
+      apiFetch("/config")
+        .then((res) => {
+          if (!res.ok) throw new Error(`Server returned ${res.status}`);
+          return res.json() as Promise<AppConfig>;
+        })
+        .then((data) => {
+          if (!cancelled) {
+            setConfig(data);
+            setLoading(false);
+          }
+        })
+        .catch((err: unknown) => {
+          if (cancelled) return;
+          if (attempt < maxAttempts) {
+            // Backend might still be starting — retry
+            setTimeout(tryFetch, retryDelay);
+          } else {
+            setError(err instanceof Error ? err.message : "Failed to load config");
+            setLoading(false);
+          }
+        });
+    };
+
+    tryFetch();
 
     return () => {
       cancelled = true;
@@ -44,7 +60,7 @@ export function useConfig(): UseConfigResult {
   }, [revision]);
 
   const saveConfig = useCallback(async (updated: AppConfig): Promise<void> => {
-    const res = await fetch("/config", {
+    const res = await apiFetch("/config", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updated),
