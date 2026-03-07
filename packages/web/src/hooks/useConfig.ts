@@ -18,26 +18,41 @@ export function useConfig(): UseConfigResult {
 
   useEffect(() => {
     let cancelled = false;
+    let attempt = 0;
+    const maxAttempts = 15;
+    const retryDelay = 2000;
+
     setLoading(true);
     setError(null);
 
-    apiFetch("/config")
-      .then((res) => {
-        if (!res.ok) throw new Error(`Server returned ${res.status}`);
-        return res.json() as Promise<AppConfig>;
-      })
-      .then((data) => {
-        if (!cancelled) {
-          setConfig(data);
-          setLoading(false);
-        }
-      })
-      .catch((err: unknown) => {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Failed to load config");
-          setLoading(false);
-        }
-      });
+    const tryFetch = () => {
+      if (cancelled) return;
+      attempt++;
+
+      apiFetch("/config")
+        .then((res) => {
+          if (!res.ok) throw new Error(`Server returned ${res.status}`);
+          return res.json() as Promise<AppConfig>;
+        })
+        .then((data) => {
+          if (!cancelled) {
+            setConfig(data);
+            setLoading(false);
+          }
+        })
+        .catch((err: unknown) => {
+          if (cancelled) return;
+          if (attempt < maxAttempts) {
+            // Backend might still be starting — retry
+            setTimeout(tryFetch, retryDelay);
+          } else {
+            setError(err instanceof Error ? err.message : "Failed to load config");
+            setLoading(false);
+          }
+        });
+    };
+
+    tryFetch();
 
     return () => {
       cancelled = true;

@@ -54,7 +54,8 @@ fn log(handle: &Option<LogHandle>, msg: &str) {
 pub fn run() {
     let log_handle = setup_log_file();
 
-    log(&log_handle, "[setup] Orthrus starting...");
+    let version = env!("CARGO_PKG_VERSION");
+    log(&log_handle, &format!("[setup] Orthrus v{version} starting..."));
 
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
