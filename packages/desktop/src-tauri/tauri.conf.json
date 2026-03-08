@@ -4,7 +4,7 @@
   "version": "0.2.0",
   "identifier": "com.teszerrakt.orthrus",
   "build": {
-    "beforeDevCommand": "bun --cwd ../../web run dev",
+    "beforeDevCommand": "bun run --cwd ../web dev",
     "beforeBuildCommand": "bun run --cwd ../.. build:web",
     "devUrl": "http://localhost:5173",
     "frontendDist": "../../web/dist"

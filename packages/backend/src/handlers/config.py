@@ -173,4 +173,8 @@ async def put_config_handler(request: web.Request) -> web.Response:
         current["sse_patterns"],
         current.get("api_breakpoint_patterns", []),
     )
+
+    # Include runtime-only fields so the frontend state stays complete
+    proxy_port = int(os.environ.get("PROXY_PORT", 28080))
+    current["proxy_address"] = f"{_get_lan_ip()}:{proxy_port}"
     return web.json_response(current)
