@@ -17,11 +17,13 @@ export function SettingsPage({ onBack }: Props) {
   const { config, loading, error, saveConfig } = useConfig();
 
   const [patterns, setPatterns] = useState<string[] | null>(null);
+  const [apiPatterns, setApiPatterns] = useState<string[] | null>(null);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [saveError, setSaveError] = useState<string | null>(null);
 
   // Initialise local patterns from fetched config (once)
   const effectivePatterns = patterns ?? config?.sse_patterns ?? [];
+  const effectiveApiPatterns = apiPatterns ?? config?.api_breakpoint_patterns ?? [];
 
   const handlePatternChange = useCallback(
     (idx: number, value: string) => {
@@ -52,25 +54,59 @@ export function SettingsPage({ onBack }: Props) {
     [config],
   );
 
+  const handleApiPatternChange = useCallback(
+    (idx: number, value: string) => {
+      setApiPatterns((prev) => {
+        const base = prev ?? config?.api_breakpoint_patterns ?? [];
+        const next = [...base];
+        next[idx] = value;
+        return next;
+      });
+    },
+    [config],
+  );
+
+  const handleAddApiPattern = useCallback(() => {
+    setApiPatterns((prev) => {
+      const base = prev ?? config?.api_breakpoint_patterns ?? [];
+      return [...base, "*/api/*"];
+    });
+  }, [config]);
+
+  const handleRemoveApiPattern = useCallback(
+    (idx: number) => {
+      setApiPatterns((prev) => {
+        const base = prev ?? config?.api_breakpoint_patterns ?? [];
+        return base.filter((_, i) => i !== idx);
+      });
+    },
+    [config],
+  );
+
   const handleSave = useCallback(async () => {
     if (!config) return;
-    const trimmed = effectivePatterns.map((p) => p.trim()).filter(Boolean);
-    if (trimmed.length === 0) {
-      setSaveError("At least one pattern is required.");
+    const trimmedSse = effectivePatterns.map((p) => p.trim()).filter(Boolean);
+    if (trimmedSse.length === 0) {
+      setSaveError("At least one SSE pattern is required.");
       setSaveStatus("error");
       return;
     }
+    const trimmedApi = effectiveApiPatterns.map((p) => p.trim()).filter(Boolean);
     setSaveStatus("saving");
     setSaveError(null);
     try {
-      await saveConfig({ ...config, sse_patterns: trimmed });
+      await saveConfig({
+        ...config,
+        sse_patterns: trimmedSse,
+        api_breakpoint_patterns: trimmedApi,
+      });
       setSaveStatus("saved");
       setTimeout(() => setSaveStatus("idle"), 2000);
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : "Save failed");
       setSaveStatus("error");
     }
-  }, [config, effectivePatterns, saveConfig]);
+  }, [config, effectivePatterns, effectiveApiPatterns, saveConfig]);
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -112,14 +148,15 @@ export function SettingsPage({ onBack }: Props) {
 
         {config && (
           <>
-            {/* Intercept Patterns */}
+            {/* SSE Intercept Patterns */}
             <section>
               <div className="mb-3">
                 <h2 className="text-foreground text-sm font-semibold uppercase tracking-widest">
-                  Intercept Patterns
+                  SSE Intercept Patterns
                 </h2>
                 <p className="text-muted-foreground text-sm mt-1">
-                  Glob patterns matched against the full request URL. Use{" "}
+                  Glob patterns for SSE stream interception. Matching requests are
+                  relayed through the breakpoint debugger. Use{" "}
                   <code className="text-accent bg-background px-1 rounded">*</code> as
                   wildcard.
                 </p>
@@ -159,6 +196,60 @@ export function SettingsPage({ onBack }: Props) {
                 <Plus size={14} />
                 Add pattern
               </Button>
+            </section>
+
+            {/* API Breakpoint Patterns */}
+            <section>
+              <div className="mb-3">
+                <h2 className="text-foreground text-sm font-semibold uppercase tracking-widest">
+                  API Breakpoint Patterns
+                </h2>
+                <p className="text-muted-foreground text-sm mt-1">
+                  Glob patterns for HTTP request/response breakpoints. Matching
+                  requests are paused so you can inspect and modify them before
+                  forwarding. Leave empty to disable API breakpoints.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                {effectiveApiPatterns.map((pattern, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <Input
+                      type="text"
+                      value={pattern}
+                      onChange={(e) => handleApiPatternChange(idx, e.target.value)}
+                      placeholder="*/api/*"
+                      className="flex-1"
+                      spellCheck={false}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      onClick={() => handleRemoveApiPattern(idx)}
+                      className="hover:text-danger hover:bg-danger/10"
+                      title="Remove pattern"
+                    >
+                      <X size={14} />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+
+              <Button
+                variant="accent"
+                size="xs"
+                onClick={handleAddApiPattern}
+                className="mt-3"
+              >
+                <Plus size={14} />
+                Add pattern
+              </Button>
+
+              {effectiveApiPatterns.length === 0 && (
+                <p className="text-dim text-xs mt-2">
+                  No patterns — all HTTP traffic will be observed but not intercepted.
+                </p>
+              )}
             </section>
 
             {/* Server Info */}

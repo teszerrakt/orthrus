@@ -15,6 +15,7 @@ CONFIG_FILE = _PROJECT_ROOT / "config.json"
 
 _DEFAULT_CONFIG = {
     "sse_patterns": ["*/sse*", "*/stream*"],
+    "api_breakpoint_patterns": [],
     "relay_host": "127.0.0.1",
     "relay_port": 29000,
 }
@@ -55,31 +56,59 @@ async def get_config_handler(request: web.Request) -> web.Response:
 
 
 async def put_config_handler(request: web.Request) -> web.Response:
-    """PUT /config — update sse_patterns in config.json."""
+    """PUT /config — update sse_patterns and/or api_breakpoint_patterns in config.json."""
     try:
         body = await request.json()
     except Exception:
         return web.json_response({"error": "Invalid JSON body"}, status=400)
 
-    if "sse_patterns" not in body:
+    if "sse_patterns" not in body and "api_breakpoint_patterns" not in body:
         return web.json_response(
-            {"error": "Missing required field: sse_patterns"}, status=400
+            {
+                "error": "Missing required field: sse_patterns or api_breakpoint_patterns"
+            },
+            status=400,
         )
 
-    patterns = body["sse_patterns"]
-    if not isinstance(patterns, list):
-        return web.json_response({"error": "sse_patterns must be an array"}, status=400)
-    if not patterns:
-        return web.json_response(
-            {"error": "sse_patterns must not be empty"}, status=400
-        )
-    if not all(isinstance(p, str) for p in patterns):
-        return web.json_response({"error": "All patterns must be strings"}, status=400)
+    # Validate sse_patterns if present
+    if "sse_patterns" in body:
+        patterns = body["sse_patterns"]
+        if not isinstance(patterns, list):
+            return web.json_response(
+                {"error": "sse_patterns must be an array"}, status=400
+            )
+        if not patterns:
+            return web.json_response(
+                {"error": "sse_patterns must not be empty"}, status=400
+            )
+        if not all(isinstance(p, str) for p in patterns):
+            return web.json_response(
+                {"error": "All sse_patterns must be strings"}, status=400
+            )
 
-    # Merge with existing config — only sse_patterns is user-editable
+    # Validate api_breakpoint_patterns if present
+    if "api_breakpoint_patterns" in body:
+        bp_patterns = body["api_breakpoint_patterns"]
+        if not isinstance(bp_patterns, list):
+            return web.json_response(
+                {"error": "api_breakpoint_patterns must be an array"}, status=400
+            )
+        if not all(isinstance(p, str) for p in bp_patterns):
+            return web.json_response(
+                {"error": "All api_breakpoint_patterns must be strings"}, status=400
+            )
+
+    # Merge with existing config — only pattern fields are user-editable
     current = _read_config()
-    updated = {**current, "sse_patterns": patterns}
-    _write_config(updated)
+    if "sse_patterns" in body:
+        current["sse_patterns"] = body["sse_patterns"]
+    if "api_breakpoint_patterns" in body:
+        current["api_breakpoint_patterns"] = body["api_breakpoint_patterns"]
+    _write_config(current)
 
-    logger.info("Config updated — sse_patterns: %s", patterns)
-    return web.json_response(updated)
+    logger.info(
+        "Config updated — sse_patterns: %s, api_breakpoint_patterns: %s",
+        current["sse_patterns"],
+        current.get("api_breakpoint_patterns", []),
+    )
+    return web.json_response(current)
