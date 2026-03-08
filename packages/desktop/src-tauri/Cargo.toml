@@ -1,6 +1,6 @@
 [package]
 name = "orthrus-desktop"
-version = "0.2.1"
+version = "0.2.2"
 description = "Orthrus SSE Debugger — native macOS app"
 authors = ["Teszerrakt"]
 edition = "2021"
