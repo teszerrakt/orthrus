@@ -59,10 +59,16 @@ async def cors_middleware(
     return response
 
 
-_PROJECT_ROOT = Path(
-    os.environ.get("ORTHRUS_ROOT", str(Path(__file__).parent.parent.parent))
+_DEFAULT_CONFIG_FILE = (
+    Path(os.environ.get("ORTHRUS_ROOT", str(Path(__file__).parent.parent.parent)))
+    / "config.json"
 )
-UI_DIST = _PROJECT_ROOT / "packages" / "web" / "dist"
+UI_DIST = (
+    Path(os.environ.get("ORTHRUS_ROOT", str(Path(__file__).parent.parent.parent)))
+    / "packages"
+    / "web"
+    / "dist"
+)
 
 
 async def _ws_broadcaster(app: web.Application):
@@ -106,7 +112,11 @@ async def on_shutdown(app: web.Application) -> None:
     logger.info("Relay server shut down")
 
 
-def create_app(mocks_dir: Path, auto_forward: bool = False) -> web.Application:
+def create_app(
+    mocks_dir: Path,
+    auto_forward: bool = False,
+    config_file: Path | None = None,
+) -> web.Application:
     app = web.Application(middlewares=[cors_middleware])
 
     # Shared state
@@ -116,6 +126,7 @@ def create_app(mocks_dir: Path, auto_forward: bool = False) -> web.Application:
     app["mock_loader"] = MockLoader(mocks_dir)
     app["mocks_dir"] = mocks_dir
     app["auto_forward_default"] = auto_forward
+    app["config_file"] = config_file or _DEFAULT_CONFIG_FILE
 
     # Routes
     app.router.add_post("/relay", relay_handler)
