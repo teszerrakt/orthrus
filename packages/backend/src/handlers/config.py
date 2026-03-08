@@ -13,6 +13,8 @@ logger = logging.getLogger(__name__)
 _PROJECT_ROOT = Path(os.environ.get("ORTHRUS_ROOT", str(Path(__file__).parents[4])))
 CONFIG_FILE = _PROJECT_ROOT / "config.json"
 
+_VALID_STAGES = {"request", "response", "both"}
+
 _DEFAULT_CONFIG = {
     "sse_patterns": ["*/sse*", "*/stream*"],
     "api_breakpoint_patterns": [],
@@ -33,11 +35,35 @@ def _get_lan_ip() -> str:
         return "127.0.0.1"
 
 
+def _normalize_breakpoint_rules(raw: list) -> list[dict[str, str]]:
+    """Normalize api_breakpoint_patterns entries.
+
+    Accepts both legacy bare strings (``"*/api/*"``) and full rule objects
+    (``{"pattern": "*/api/*", "stage": "both"}``).  Bare strings are promoted
+    to ``{"pattern": <str>, "stage": "both"}``.
+    """
+    result: list[dict[str, str]] = []
+    for item in raw:
+        if isinstance(item, str):
+            result.append({"pattern": item, "stage": "both"})
+        elif isinstance(item, dict) and "pattern" in item:
+            stage = item.get("stage", "both")
+            if stage not in _VALID_STAGES:
+                stage = "both"
+            result.append({"pattern": item["pattern"], "stage": stage})
+    return result
+
+
 def _read_config() -> dict:
     if CONFIG_FILE.exists():
         try:
             on_disk = json.loads(CONFIG_FILE.read_text())
-            return {**_DEFAULT_CONFIG, **on_disk}
+            merged = {**_DEFAULT_CONFIG, **on_disk}
+            # Normalize legacy string[] api_breakpoint_patterns to object[]
+            merged["api_breakpoint_patterns"] = _normalize_breakpoint_rules(
+                merged.get("api_breakpoint_patterns", [])
+            )
+            return merged
         except Exception as exc:
             logger.warning("Failed to read config.json: %s", exc)
     return dict(_DEFAULT_CONFIG)
@@ -93,17 +119,43 @@ async def put_config_handler(request: web.Request) -> web.Response:
             return web.json_response(
                 {"error": "api_breakpoint_patterns must be an array"}, status=400
             )
-        if not all(isinstance(p, str) for p in bp_patterns):
-            return web.json_response(
-                {"error": "All api_breakpoint_patterns must be strings"}, status=400
-            )
+        # Accept both legacy strings and rule objects
+        for item in bp_patterns:
+            if isinstance(item, str):
+                continue  # legacy format — will be normalised on save
+            if isinstance(item, dict):
+                if "pattern" not in item or not isinstance(item["pattern"], str):
+                    return web.json_response(
+                        {
+                            "error": "Each api_breakpoint_patterns object must have a string 'pattern' field"
+                        },
+                        status=400,
+                    )
+                stage = item.get("stage", "both")
+                if stage not in _VALID_STAGES:
+                    return web.json_response(
+                        {
+                            "error": f"Invalid stage '{stage}' — must be one of: request, response, both"
+                        },
+                        status=400,
+                    )
+            else:
+                return web.json_response(
+                    {
+                        "error": "api_breakpoint_patterns items must be strings or {pattern, stage} objects"
+                    },
+                    status=400,
+                )
 
     # Merge with existing config — only pattern fields are user-editable
     current = _read_config()
     if "sse_patterns" in body:
         current["sse_patterns"] = body["sse_patterns"]
     if "api_breakpoint_patterns" in body:
-        current["api_breakpoint_patterns"] = body["api_breakpoint_patterns"]
+        # Normalize to canonical object format before saving
+        current["api_breakpoint_patterns"] = _normalize_breakpoint_rules(
+            body["api_breakpoint_patterns"]
+        )
     _write_config(current)
 
     logger.info(

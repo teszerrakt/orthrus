@@ -279,9 +279,16 @@ export interface SessionState {
 
 // ── Settings / Config types ───────────────────────────────────────────────────
 
+export type BreakpointStage = "request" | "response" | "both";
+
+export interface ApiBreakpointRule {
+  pattern: string;
+  stage: BreakpointStage;
+}
+
 export interface AppConfig {
   sse_patterns: string[];
-  api_breakpoint_patterns: string[];
+  api_breakpoint_patterns: ApiBreakpointRule[];
   relay_host: string;
   relay_port: number;
   proxy_address: string;

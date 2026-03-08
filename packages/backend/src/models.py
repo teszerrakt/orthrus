@@ -33,6 +33,28 @@ class RequestInfo(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# API breakpoint configuration
+# ---------------------------------------------------------------------------
+
+
+class BreakpointStage(str, Enum):
+    """Which phase of the HTTP flow to intercept."""
+
+    REQUEST = "request"
+    RESPONSE = "response"
+    BOTH = "both"
+
+
+class ApiBreakpointRule(BaseModel):
+    """A single API breakpoint pattern with its interception stage."""
+
+    model_config = ConfigDict(frozen=True)
+
+    pattern: str
+    stage: BreakpointStage = BreakpointStage.BOTH
+
+
+# ---------------------------------------------------------------------------
 # HTTP Traffic types (for general API interception)
 # ---------------------------------------------------------------------------
 
