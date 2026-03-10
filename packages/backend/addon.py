@@ -525,3 +525,7 @@ def _url_encode(url: str) -> str:
     from urllib.parse import quote
 
     return quote(url, safe="")
+
+
+# mitmproxy --scripts discovery: must be a module-level list
+addons = [SSEInterceptorAddon()]

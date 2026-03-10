@@ -19,6 +19,12 @@ from src.handlers.cert import (
     post_tls_error_handler,
 )
 from src.handlers.config import get_config_handler, put_config_handler
+from src.handlers.ingest import (
+    ingest_chunk_handler,
+    ingest_drain_handler,
+    ingest_end_handler,
+    ingest_start_handler,
+)
 from src.handlers.relay import relay_handler
 from src.handlers.replay import replay_handler
 from src.handlers.sessions import clear_sessions_handler, sessions_handler
@@ -130,6 +136,10 @@ def create_app(
 
     # Routes
     app.router.add_post("/relay", relay_handler)
+    app.router.add_post("/ingest/start", ingest_start_handler)
+    app.router.add_post("/ingest/chunk", ingest_chunk_handler)
+    app.router.add_post("/ingest/drain", ingest_drain_handler)
+    app.router.add_post("/ingest/end", ingest_end_handler)
     app.router.add_get("/ws", websocket_handler)
     app.router.add_get("/sessions", sessions_handler)
     app.router.add_delete("/sessions", clear_sessions_handler)
