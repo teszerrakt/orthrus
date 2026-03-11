@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+
 import logging
 
 import aiohttp
@@ -172,8 +173,10 @@ async def relay_handler(request: web.Request) -> web.StreamResponse:
         if not req_info.url:
             raise web.HTTPBadRequest(reason="Missing 'target' query parameter")
 
-        # Borrow-cookie: enrich thin cookies from the jar
-        req_info = _enrich_cookies(req_info, request.app.get("cookie_jar"))
+        # Borrow-cookie: enrich thin cookies from the jar (per-SSE-rule flag)
+        borrow_cookies = request.query.get("borrow_cookies", "1") == "1"
+        if borrow_cookies:
+            req_info = _enrich_cookies(req_info, request.app.get("cookie_jar"))
 
         session = Session(req_info)
         if auto_forward_default:
