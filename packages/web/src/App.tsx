@@ -165,11 +165,11 @@ export default function App() {
         {/* Left: session/traffic list with tabs */}
         <div className="w-80 shrink-0 overflow-hidden flex flex-col">
           {/* Tab switcher */}
-          <div className="flex border-b border-border bg-panel shrink-0">
+          <div className="flex items-center h-10 border-b border-border bg-panel shrink-0">
             <button
               onClick={() => setTab("sse")}
               className={[
-                "flex-1 px-3 py-1.5 text-xs font-medium uppercase tracking-wider transition-colors relative",
+                "flex-1 px-3 py-2 text-xs font-medium uppercase tracking-wider transition-colors relative",
                 tab === "sse"
                   ? "text-accent"
                   : "text-muted-foreground hover:text-foreground",
@@ -188,7 +188,7 @@ export default function App() {
             <button
               onClick={() => setTab("traffic")}
               className={[
-                "flex-1 px-3 py-1.5 text-xs font-medium uppercase tracking-wider transition-colors relative",
+                "flex-1 px-3 py-2 text-xs font-medium uppercase tracking-wider transition-colors relative",
                 tab === "traffic"
                   ? "text-accent"
                   : "text-muted-foreground hover:text-foreground",
@@ -236,6 +236,7 @@ export default function App() {
         <div className="flex-1 overflow-hidden">
           {tab === "sse" && selected ? (
             <SessionDetail
+              key={selected.info.id}
               session={selected}
               onForward={(idx, ev) => forward(selected.info.id, idx, ev)}
               onEdit={(idx, orig, edited) =>

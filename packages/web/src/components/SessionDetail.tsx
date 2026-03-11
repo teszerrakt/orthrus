@@ -73,7 +73,7 @@ export function SessionDetail({
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Toolbar */}
-      <div className="flex items-center gap-2 px-3 py-2 border-b border-border bg-panel shrink-0 flex-wrap">
+      <div className="flex items-center gap-2 px-3 h-10 border-b border-border bg-panel shrink-0 flex-wrap">
         {statusBadge(
           session.info.status,
           Boolean(session.info.error_message),
